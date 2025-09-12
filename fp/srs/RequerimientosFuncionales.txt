@@ -1,0 +1,60 @@
+Requerimientos funcionales
+🔹 Módulo de gestión de inventario
+
+Registrar productos en inventario con sus atributos básicos (nombre, categoría, proveedor, costo).
+
+Actualizar automáticamente el stock al registrar ventas o compras.
+
+Consultar en tiempo real el stock disponible.
+
+Generar alertas de reposición basadas en patrones históricos de consumo.
+
+Calcular consumos promedio por evento.
+
+🔹 Módulo de presupuesto y tesorería
+
+Registrar ingresos y egresos vinculados a transacciones.
+
+Registrar deudas (cuentas a pagar) y mantener su estado (pendiente / saldada).
+
+Consultar el presupuesto consolidado en tiempo real.
+
+Registrar el pago de deudas y actualizar el estado financiero.
+
+Permitir reportes básicos de ingresos, egresos y deudas.
+
+🔹 Módulo de eventos y venta de entradas
+
+Crear y administrar eventos con datos básicos (nombre, fecha, valor entrada).
+
+Generar panel de control de ventas para cada evento.
+
+Registrar ventas de entradas y actualizar automáticamente el presupuesto.
+
+Consultar en tiempo real el total de entradas vendidas.
+
+Estimar la demanda de productos según el historial de eventos similares.
+
+🔹 Acceso multiusuario y control de roles
+
+Permitir acceso a múltiples usuarios de manera simultánea.
+
+Gestionar permisos diferenciados según roles (cajero, tesorería, abastecimiento, organización).
+
+Garantizar la trazabilidad de las operaciones (registro con usuario y timestamp).
+
+🔹 Usabilidad y transparencia
+
+Ofrecer una interfaz web accesible y fácil de usar para organizaciones sin estructura empresarial.
+
+Centralizar la información para que esté disponible a todos los miembros autorizados.
+
+Permitir la descentralización de tareas administrativas (no depender de una sola persona).
+
+🔹 Funcionalidades avanzadas (escalables)
+
+Implementar módulo de análisis de datos históricos para predicciones de ventas y consumos.
+
+Generar reportes estadísticos básicos para la toma de decisiones.
+
+Ofrecer exportación de datos (ej. CSV, PDF) para documentación externa.

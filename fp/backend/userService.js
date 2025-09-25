@@ -10,10 +10,23 @@ class UserService {
     }
 
     register(username, password) {
+        // Validaciones
+        if (typeof username !== "string" || username.length < 3) {
+            throw new Error("Username must be at least 3 characters long");
+        }
+
+        const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])/;
+        if (!passwordRegex.test(password)) {
+            throw new Error("Password must contain at least one uppercase letter and one symbol (!@#$%^&*)");
+        }
+
+        // Verificar existencia de usuario
         const exists = this.users.find(u => u.username === username);
         if (exists) {
             throw new Error("Username already exists");
         }
+
+        // Crear usuario
         const user = new User(this.currentId++, username, password);
         this.users.push(user);
         return user;

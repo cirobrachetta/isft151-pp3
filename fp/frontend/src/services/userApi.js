@@ -1,14 +1,20 @@
 // Abstracción de llamadas al backend
 const API_URL = "http://localhost:4000/users";
 
-export async function registerUser(username, password) {
-    const res = await fetch(`${API_URL}/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
-    });
-    return res.json();
-}
+export const registerUser = async (username, password) => {
+  const response = await fetch("http://localhost:4000/users/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json(); // lee el mensaje de error
+    throw new Error(errorData.error || "Unknown error");
+  }
+
+  return response.json();
+};
 
 export async function loginUser(username, password) {
     const res = await fetch(`${API_URL}/login`, {

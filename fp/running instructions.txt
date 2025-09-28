@@ -1,0 +1,225 @@
+# Running Instructions
+
+> Backend: Express + SQLite (better-sqlite3) en `backend/`.
+> Frontend: React en `frontend/`.
+> DB: archivo `backend/db/app.db` creado por `backend/db/init.js`.
+
+---
+
+## 1) Prerrequisitos
+
+* Node.js 18+ (recomendado 20+)
+* npm 9+
+* Windows PowerShell o bash
+
+---
+
+## 2) Instalación
+
+```bash
+# En la raíz del repo
+npm i
+# Backend deps (si faltan)
+npm i better-sqlite3 bcryptjs uuid cookie-parser cors express body-parser
+# Dev helpers
+npm i -D concurrently
+```
+
+---
+
+## 3) Inicializar la base de datos
+
+```bash
+# Crea/recarga backend/db/app.db con schema + triggers
+npm run db:init
+# Verificar tablas
+npm run db:tables
+```
+
+> Si `db:init` pregunta por sobreescribir y no querés, responde `n`.
+
+---
+
+## 4) Desarrollo
+
+### 4.1 Dos servidores (recomendado en dev)
+
+* Backend: [http://localhost:4000](http://localhost:4000)
+* Frontend: [http://localhost:5173](http://localhost:5173) (Vite) o 3000 (CRA)
+
+`package.json` (raíz) esperado:
+
+```json
+{
+  "scripts": {
+    "start": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "backend": "node backend/app.js",
+    "frontend": "npm start --prefix frontend",
+    "db:init": "node backend/db/init.js",
+    "db:tables": "node -e \"const d=require('./backend/db/db'); console.log(d.prepare('SELECT name FROM sqlite_master WHERE type=\\'table\\'').all())\""
+  }
+}
+```
+
+#### 4.1.1 CRA (si usás Create React App)
+
+`frontend/package.json` debe incluir proxy:
+
+```json
+{
+  "proxy": "http://localhost:4000"
+}
+```
+
+Correr:
+
+```bash
+cd frontend && npm i && npm start
+```
+
+Las llamadas del front deben usar **rutas relativas** a la API, por ejemplo `/api/users/login` (ver 5).
+
+#### 4.1.2 Vite (recomendado)
+
+Crear o verificar `vite.config.ts`:
+
+```ts
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+export default defineConfig({
+  plugins: [react()],
+  server: { proxy: { '/api': 'http://localhost:4000' } }
+});
+```
+
+Correr:
+
+```bash
+cd frontend && npm i && npm run dev
+```
+
+Levantar backend en otra terminal:
+
+```bash
+npm run backend
+```
+
+---
+
+## 5) Rutas de la API y consumo desde el front
+
+* Montar API en Express bajo **/api**:
+
+```js
+// backend/app.js
+app.use('/api/users', userController);
+```
+
+* El frontend **no** debe pedir `GET /login` al backend. Debe llamar **POST /api/users/login**.
+* Ejemplo `services/userApi.js`:
+
+```js
+const API = '/api/users';
+export async function loginUser(username, password){
+  const r = await fetch(`${API}/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ username, password })
+  });
+  if (!r.ok) throw new Error('login failed');
+  return r.json();
+}
+```
+
+Prueba rápida:
+
+```bash
+curl -i -X POST http://localhost:4000/api/users/login \
+ -H "Content-Type: application/json" \
+ -d '{"username":"test","password":"test"}'
+```
+
+---
+
+## 6) Producción (un servidor)
+
+1. Build del frontend:
+
+```bash
+cd frontend && npm run build
+```
+
+* CRA genera `frontend/build/`, Vite genera `frontend/dist/`.
+
+2. Servir estáticos + SPA fallback en Express:
+
+```js
+const path = require('path');
+// API
+app.use('/api/users', userController);
+// Front
+const clientDir = path.join(__dirname, '../frontend/dist'); // o '../frontend/build'
+app.use(express.static(clientDir));
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api')) return res.status(404).end();
+  res.sendFile(path.join(clientDir, 'index.html'));
+});
+```
+
+3. Levantar:
+
+```bash
+node backend/app.js
+# Navegar a http://localhost:4000  (el SPA maneja /login)
+```
+
+---
+
+## 7) CSP para desarrollo
+
+Si tenés CSP estricta en `index.html`, para dev permití el backend:
+
+```html
+<meta http-equiv="Content-Security-Policy"
+  content="default-src 'self'; connect-src 'self' http://localhost:4000; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
+```
+
+---
+
+## 8) Troubleshooting
+
+* **404 GET /login**: estás llamando ruta del SPA al backend. Navegá al front (`/login`) y desde el front hacé **POST /api/users/login**.
+* **CORS**: usa proxy (CRA `proxy`, Vite `server.proxy`).
+* **DB no encontrada**: corré `npm run db:init` y verifica que `backend/db/app.db` exista.
+* **better-sqlite3 build error**: usa Node LTS y reinstalá: `npm rebuild better-sqlite3`.
+* **Windows**: evitá rutas con espacios en scripts o usa comillas.
+
+---
+
+## 9) Backups y mantenimiento DB
+
+Compactar/backup atómico:
+
+```sql
+VACUUM INTO 'backup_YYYY-MM-DD.db';
+```
+
+En Node:
+
+```bash
+node -e "const d=require('./backend/db/db'); d.prepare(\"VACUUM INTO 'backup.db'\").run(); console.log('ok')"
+```
+
+---
+
+## 10) Orden de comandos típico
+
+```bash
+npm run db:init
+npm run backend          # terminal A
+# en otra terminal
+npm run frontend         # CRA o Vite
+```
+
+Listo. Esto elimina el 404 /login y el CSP bloqueando `connect-src` en dev.

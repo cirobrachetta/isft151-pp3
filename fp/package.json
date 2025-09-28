@@ -2,15 +2,26 @@
   "name": "fp",
   "version": "1.0.0",
   "private": true,
-  "devDependencies": {
-    "concurrently": "^8.2.2"
-  },
   "scripts": {
     "start": "concurrently \"npm run backend\" \"npm run frontend\"",
     "backend": "node backend/app.js",
-    "frontend": "npm start --prefix frontend"
+
+    "frontend": "npm start --prefix frontend",
+
+    "db:init": "node backend/db/init.js",
+    "db:tables": "node -e \"const d=require('./backend/db/db'); console.log(d.prepare('SELECT name FROM sqlite_master WHERE type=\\'table\\'').all())\"",
+    "db:list": "node backend/db/run-sql.js list backend/db/queries",
+    "db:exec:queries": "node backend/db/run-sql.js exec backend/db/queries queries.sql"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3"
   },
   "dependencies": {
+    "better-sqlite3": "^11.5.0",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
+    "uuid": "^9.0.1",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
     "express": "^5.1.0"

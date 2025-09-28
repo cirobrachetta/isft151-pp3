@@ -4,6 +4,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const path = require('path');
 
 // Importa el controlador de usuarios
 const userController = require("./userController");
@@ -17,6 +18,8 @@ app.use(bodyParser.json()); // parsea JSON en request body
 
 // Rutas
 app.use("/users", userController);
+
+app.get('/health', (_req,res)=>res.send('OK'));
 
 // Ruta de prueba
 app.get("/", (req, res) => {

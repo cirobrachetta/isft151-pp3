@@ -5,9 +5,7 @@
   "scripts": {
     "start": "concurrently \"npm run backend\" \"npm run frontend\"",
     "backend": "node backend/app.js",
-
     "frontend": "npm start --prefix frontend",
-
     "db:init": "node backend/db/init.js",
     "db:tables": "node -e \"const d=require('./backend/db/db'); console.log(d.prepare('SELECT name FROM sqlite_master WHERE type=\\'table\\'').all())\"",
     "db:list": "node backend/db/run-sql.js list backend/db/queries",
@@ -18,12 +16,13 @@
     "cross-env": "^7.0.3"
   },
   "dependencies": {
-    "better-sqlite3": "^11.5.0",
+    "bcrypt": "^6.0.0",
     "bcryptjs": "^2.4.3",
-    "cookie-parser": "^1.4.7",
-    "uuid": "^9.0.1",
+    "better-sqlite3": "^11.10.0",
     "body-parser": "^2.2.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "uuid": "^9.0.1"
   }
 }

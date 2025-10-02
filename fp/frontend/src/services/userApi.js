@@ -9,8 +9,14 @@ export const registerUser = async (username, password) => {
   });
 
   if (!response.ok) {
-    const errorData = await response.json(); // lee el mensaje de error
-    throw new Error(errorData.error || "Unknown error");
+    let errorMessage = "Unknown error";
+    try {
+      const errorData = await response.json(); // intenta leer JSON
+      errorMessage = errorData.error || errorMessage;
+    } catch (err) {
+      errorMessage = response.statusText || errorMessage; // fallback si no es JSON
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();

@@ -1,14 +1,14 @@
 // Contiene la lógica de usuarios
 // Principio SRP: cada clase tiene una responsabilidad
-const User = require("./userModel");
+const bcrypt = require("bcrypt"); // para almacenar passwords de forma segura
 
 class UserService {
-    constructor() {
-        this.users = [];
-        this.currentId = 1;
+    constructor(db) {
+        this.db = db; // se recibe la conexión a la DB
         this.sessions = new Map(); // manejo simple de sesiones
     }
 
+    // Registrar usuario
     register(username, password) {
         // Validaciones
         if (typeof username !== "string" || username.length < 3) {
@@ -20,35 +20,42 @@ class UserService {
             throw new Error("Password must contain at least one uppercase letter and one symbol (!@#$%^&*)");
         }
 
-        // Verificar existencia de usuario
-        const exists = this.users.find(u => u.username === username);
+        // Verificar existencia de usuario en DB
+        const exists = this.db.prepare("SELECT id FROM users WHERE username = ?").get(username);
         if (exists) {
             throw new Error("Username already exists");
         }
 
-        // Crear usuario
-        const user = new User(this.currentId++, username, password);
-        this.users.push(user);
+        // Hash de password
+        const passwordHash = bcrypt.hashSync(password, 10);
+
+        // Insertar usuario en DB
+        const stmt = this.db.prepare(
+            "INSERT INTO users (username, password_hash) VALUES (?, ?)"
+        );
+        const info = stmt.run(username, passwordHash);
+
+        // Devolver usuario creado
+        const user = { id: info.lastInsertRowid, username };
+        console.log(`Usuario registrado con éxito: ${username}`);
         return user;
     }
 
-    updateUser(id, newUsername, newPassword) {
-        const user = this.users.find(u => u.id === id);
-        if (!user) throw new Error("User not found");
-        user.username = newUsername || user.username;
-        user.password = newPassword || user.password;
-        return user;
-    }
-
-    deleteUser(id) {
-        this.users = this.users.filter(u => u.id !== id);
-    }
-
+    // Login
     login(username, password) {
-        const user = this.users.find(u => u.username === username && u.password === password);
+        // Buscar usuario en DB
+        const user = this.db.prepare("SELECT id, username, password_hash FROM users WHERE username = ?").get(username);
         if (!user) throw new Error("Invalid credentials");
+
+        // Verificar password
+        const valid = bcrypt.compareSync(password, user.password_hash);
+        if (!valid) throw new Error("Invalid credentials");
+
+        // Generar token y almacenar en memoria
         const token = `session-${Date.now()}-${user.id}`;
         this.sessions.set(token, user.id);
+
+        console.log(`Usuario logeado con éxito: ${username}`);
         return token;
     }
 
@@ -57,7 +64,25 @@ class UserService {
     }
 
     getAllUsers() {
-        return this.users;
+        return this.db.prepare("SELECT id, username FROM users").all();
+    }
+
+    updateUser(id, newUsername, newPassword) {
+        const user = this.db.prepare("SELECT * FROM users WHERE id = ?").get(id);
+        if (!user) throw new Error("User not found");
+
+        let username = newUsername || user.username;
+        let passwordHash = user.password_hash;
+        if (newPassword) passwordHash = bcrypt.hashSync(newPassword, 10);
+
+        this.db.prepare("UPDATE users SET username = ?, password_hash = ? WHERE id = ?")
+               .run(username, passwordHash, id);
+
+        return { id, username };
+    }
+
+    deleteUser(id) {
+        this.db.prepare("DELETE FROM users WHERE id = ?").run(id);
     }
 }
 

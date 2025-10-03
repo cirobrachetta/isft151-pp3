@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<queries>
+    <query id="users.selectUserByUsername">
+    <![CDATA[
+        SELECT id, username, password_hash, active, created_at
+        FROM users WHERE username = :username;
+    ]]>
+    </query>
+
+    <query id="users.selectUserById">
+    <![CDATA[
+        SELECT id, username, password_hash, active, created_at
+        FROM users WHERE id = :id;
+    ]]>
+    </query>
+
+    <query id="users.selectUsers">
+    <![CDATA[
+        SELECT id, username, active, created_at
+        FROM users ORDER BY id;
+    ]]>
+    </query>
+
+    <query id="users.insertUser">
+    <![CDATA[
+        INSERT INTO users (username, password_hash, active, created_at)
+        VALUES (:username, :hash, 1, COALESCE(:createdAt, CURRENT_TIMESTAMP));
+    ]]>
+    </query>
+
+    <query id="users.updateUserById">
+    <![CDATA[
+        UPDATE users SET username = :username, password_hash = :hash
+        WHERE id = :id;
+    ]]>
+    </query>
+
+    <query id="users.deleteUserById">
+    <![CDATA[
+        DELETE FROM users WHERE id = :id;
+    ]]>
+    </query>
+
+    <query id="users.existsUserByUsername">
+    <![CDATA[
+        SELECT EXISTS(SELECT 1 FROM users WHERE username = :username) AS found;
+    ]]>
+    </query>
+</queries>

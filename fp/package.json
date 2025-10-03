@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "concurrently \"npm run backend\" \"npm run frontend\"",
-    "backend": "node backend/app.js",
+    "backend": "node backend/app/app.js",
     "frontend": "npm start --prefix frontend",
     "db:init": "node backend/db/init.js",
     "db:tables": "node -e \"const d=require('./backend/db/db'); console.log(d.prepare('SELECT name FROM sqlite_master WHERE type=\\'table\\'').all())\"",
@@ -23,6 +23,7 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "fast-xml-parser": "^5.2.5",
     "uuid": "^9.0.1"
   }
 }

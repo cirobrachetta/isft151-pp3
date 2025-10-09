@@ -1,31 +1,25 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-
-import LandingPage from "./components/LandingPage";
-import LoginForm from "./components/LoginForm";
-import RegisterForm from "./components/RegisterForm";
-import UserList from "./components/UserList";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { routesConfig } from "./routes/routesConfig";
 
 export default function App() {
-    const [token, setToken] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem("token"));
+  const isAuth = !!token;
 
-    const handleLogin = (t) => {
-        setToken(t);
-    };
+  const handleLogin = (t) => {
+    localStorage.setItem("token", t);
+    setToken(t);
+  };
 
-    return (
-        <Router>
-            <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/login" element={<LoginForm onLogin={handleLogin} />} />
-                <Route path="/register" element={<RegisterForm />} />
-                <Route
-                    path="/users"
-                    element={token ? <UserList /> : <Navigate to="/login" replace />}
-                />
-                {/* Ruta catch-all */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-        </Router>
-    );
+  const routes = routesConfig(isAuth, handleLogin);
+
+  return (
+    <Router>
+      <Routes>
+        {routes.map(({ path, element }) => (
+          <Route key={path} path={path} element={element} />
+        ))}
+      </Routes>
+    </Router>
+  );
 }

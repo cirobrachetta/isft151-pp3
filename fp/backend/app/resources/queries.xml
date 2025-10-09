@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <queries>
+    <query id="users.insertUser">
+    <![CDATA[
+        INSERT INTO users (username, password_hash, active, created_at)
+        VALUES (:username, :hash, 1, CURRENT_TIMESTAMP);
+    ]]>
+    </query>
+
     <query id="users.selectUserByUsername">
     <![CDATA[
         SELECT id, username, password_hash, active, created_at
@@ -18,13 +25,6 @@
     <![CDATA[
         SELECT id, username, active, created_at
         FROM users ORDER BY id;
-    ]]>
-    </query>
-
-    <query id="users.insertUser">
-    <![CDATA[
-        INSERT INTO users (username, password_hash, active, created_at)
-        VALUES (:username, :hash, 1, COALESCE(:createdAt, CURRENT_TIMESTAMP));
     ]]>
     </query>
 

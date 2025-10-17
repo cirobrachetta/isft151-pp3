@@ -3,6 +3,7 @@ const { getDB } = require('../../db/connection');
 const User = require('../models/User');
 
 const db = getDB();
+
 const SelectUserByUsername = db.prepare(loadQuery('users.selectUserByUsername'));
 const SelectUserById = db.prepare(loadQuery('users.selectUserById'));
 const SelectUsers = db.prepare(loadQuery('users.selectUsers'));
@@ -10,6 +11,8 @@ const InsertUser = db.prepare(loadQuery('users.insertUser'));
 const UpdateUserById = db.prepare(loadQuery('users.updateUserById'));
 const DeleteUserById = db.prepare(loadQuery('users.deleteUserById'));
 const ExistsUserByUsername = db.prepare(loadQuery('users.existsUserByUsername'));
+const SelectRoleAndOrgByUserId = db.prepare(loadQuery('users.selectRoleAndOrgByUserId'));
+const InsertDefaultRoleForUser = db.prepare(loadQuery('users.insertDefaultRoleForUser'));
 
 const UserDAO = {
   selectUserByUsername(username) {
@@ -26,8 +29,8 @@ const UserDAO = {
     return SelectUsers.all().map(User.fromRow);
   },
 
-  insertUser({ username, hash }) {
-    const info = InsertUser.run({ username, hash });
+  insertUser({ username, hash, organizationId }) {
+    const info = InsertUser.run({ username, hash, organizationId });
     return { lastInsertRowid: info.lastInsertRowid, changes: info.changes };
   },
 
@@ -45,6 +48,16 @@ const UserDAO = {
     const { found } = ExistsUserByUsername.get({ username }) || {};
     return Boolean(found);
   },
+
+  selectRoleAndOrgByUserId(userId) {
+    return SelectRoleAndOrgByUserId.get({ userId }) || {};
+  },
+
+  assignDefaultRole(userId, organizationId) {
+    const info = InsertDefaultRoleForUser.run({ userId, organizationId });
+    return { changes: info.changes };
+  },
+  
 };
 
 module.exports = UserDAO;

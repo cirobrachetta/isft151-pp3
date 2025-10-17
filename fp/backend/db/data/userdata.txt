@@ -1,0 +1,11 @@
+Globales
+Usuario	            Contraseña	        Rol	                        Alcance
+-------------------------------------------------------------------------------
+superadmin          SuperAdmin123!      Administrador general       Global
+
+
+-------------------------------------------------------------------------------
+Creados en la db de Leo
+Usuario	            Contraseña	        Rol	                        Alcance
+-------------------------------------------------------------------------------
+Leo                 Leo!                Miembro123                  Tres 3 Dos

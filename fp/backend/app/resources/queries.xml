@@ -46,4 +46,54 @@
         SELECT EXISTS(SELECT 1 FROM users WHERE username = :username) AS found;
     ]]>
     </query>
+
+    <query id="users.insertUserWithOrg">
+    <![CDATA[
+        INSERT INTO users (username, password_hash, organization_id, active, created_at) 
+        VALUES (:username, :hash, :organization_id, 1, CURRENT_TIMESTAMP);
+    ]]>
+    </query>
+
+    <query id="users.selectUserWithOrg">
+    <![CDATA[
+        SELECT u.id, u.username, u.password_hash, u.active, u.created_at, o.name AS organization_name, u.organization_id
+        FROM users u
+        LEFT JOIN organizations o ON o.id = u.organization_id
+        WHERE u.id = :id;
+    ]]>
+    </query>
+
+    <query id="organizations.selectAll">
+    <![CDATA[
+        SELECT id, name, contact
+        FROM organizations
+        ORDER BY name;
+    ]]>
+    </query>
+
+    <query id="organizations.insert">
+    <![CDATA[
+        INSERT INTO organizations (name, contact)
+        VALUES (:name, :contact);
+    ]]>
+    </query>
+
+    <query id="users.selectRoleAndOrgByUserId">
+    <![CDATA[
+        SELECT r.name AS role, o.name AS organization
+        FROM user_roles ur
+        JOIN roles r ON r.id = ur.role_id
+        LEFT JOIN organizations o ON o.id = ur.organization_id
+        WHERE ur.user_id = :userId
+        LIMIT 1;
+    ]]>
+    </query>
+
+    <query id="users.insertDefaultRoleForUser">
+    <![CDATA[
+    INSERT INTO user_roles (user_id, role_id, organization_id)
+    VALUES (:userId, (SELECT id FROM roles WHERE name = 'miembro'), :organizationId);
+    ]]>
+    </query>
+
 </queries>

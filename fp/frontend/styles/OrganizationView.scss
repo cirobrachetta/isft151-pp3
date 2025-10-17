@@ -1,0 +1,37 @@
+.organizationsContainer {
+  text-align: center;
+  margin-top: 5rem;
+
+  h2 {
+    margin-bottom: 1.5rem;
+  }
+
+  .orgForm {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+
+    input {
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+
+    button {
+      padding: 0.6rem 1.2rem;
+      cursor: pointer;
+    }
+  }
+
+  .errorText {
+    color: red;
+  }
+
+  .orgList {
+    list-style: none;
+    padding: 0;
+    li {
+      margin: 0.3rem 0;
+    }
+  }
+}

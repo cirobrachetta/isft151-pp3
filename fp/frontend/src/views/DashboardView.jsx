@@ -15,6 +15,19 @@ export default function DashboardView() {
     <div style={styles.container}>
       <h1>Bienvenido{username ? `, ${username}` : ""}</h1>
       <p>Este es tu panel principal.</p>
+
+      <div style={styles.buttonGroup}>
+        <button onClick={() => navigate("/cash")} style={styles.button}>
+          Movimientos de Tesorería
+        </button>
+        <button onClick={() => navigate("/debts")} style={styles.button}>
+          Deudas
+        </button>
+        <button onClick={() => navigate("/payments")} style={styles.button}>
+          Pagos
+        </button>
+      </div>
+
       <button onClick={handleLogout} style={styles.button}>
         Cerrar sesión
       </button>

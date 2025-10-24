@@ -8,6 +8,7 @@ CREATE TABLE users (
   username TEXT UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,
   active INTEGER NOT NULL DEFAULT 1,
+  organization_id TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE user_roles (

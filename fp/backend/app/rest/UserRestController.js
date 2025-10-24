@@ -1,14 +1,18 @@
 const { Router } = require('express');
-const UserController = require('../controllers/UserController');
+const { UserController } = require('../controllers/UserController');
+const { requireAuth } = require('../utils/AuthMiddleware');
 
-const router = Router();
+const router = require('express').Router();
 
-// Rutas de usuario
+// Público
 router.post('/register', UserController.register);
 router.post('/login', UserController.login);
-router.post('/logout', UserController.logout);
-router.put('/:id', UserController.update);
-router.delete('/:id', UserController.remove);
-router.get('/', UserController.list);
+
+// Protegido
+router.post('/logout', requireAuth, UserController.logout);
+router.put('/:id', requireAuth, UserController.update);
+router.delete('/:id', requireAuth, UserController.remove);
+router.get('/', requireAuth, UserController.list);
+router.post('/:id/assignRole', requireAuth, UserController.assignRole);
 
 module.exports = router;

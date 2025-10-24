@@ -10,6 +10,7 @@ const cashMovementRoutes = require("./rest/CashMovementRestController");
 const DebtRestController = require("./rest/DebtRestController");
 const PaymentRestController = require("./rest/PaymentRestController");
 const orgRoutes = require('./rest/OrganizationRestController');
+const roleRoutes = require('./rest/RoleRestController');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -23,6 +24,7 @@ app.use(bodyParser.json());
 
 app.use('/users', userRoutes);
 app.use('/organizations', orgRoutes);
+app.use('/roles', roleRoutes);
 
 app.use("/api/tesoreria/movimientos", cashMovementRoutes);
 app.use("/api/debts", DebtRestController);

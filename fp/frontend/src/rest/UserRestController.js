@@ -1,6 +1,7 @@
 const API_BASE = "http://localhost:4000";
 const API_URL = `${API_BASE}/users`;
 const ORG_URL = `${API_BASE}/organizations`;
+const ROLE_URL = `${API_BASE}/roles`;
 
 async function handleResponse(res) {
   if (!res.ok) {
@@ -43,10 +44,44 @@ export const UserRestController = {
   },
 
   list() {
-    return fetch(API_URL).then(handleResponse);
+    const token = localStorage.getItem("token");
+    return fetch(API_URL, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    }).then(handleResponse);
   },
 
   listOrganizations() {
-    return fetch(ORG_URL).then(handleResponse);
+    const token = localStorage.getItem("token");
+    return fetch(ORG_URL, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    }).then(handleResponse);
+  },
+
+  listRoles() {
+    const token = localStorage.getItem("token");
+    return fetch(ROLE_URL, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    }).then(handleResponse);
+  },
+
+  assignRole(userId, roleId, organizationId) {
+    const token = localStorage.getItem("token");
+    return fetch(`${API_URL}/${userId}/assignRole`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ roleId, organizationId })
+    }).then(handleResponse);
   },
 };

@@ -12,21 +12,19 @@ const UserController = {
       if (typeof username !== 'string' || username.length < 3)
         throw new Error('Username must be at least 3 characters');
       if (!/^(?=.*[A-Z])(?=.*[!@#$%^&*])/.test(password))
-        throw new Error('Password needs uppercase and symbol');
+        throw new Error('Password must include uppercase and symbol');
       if (UserDAO.existsUserByUsername(username))
         throw new Error('Username already exists');
 
       const hash = bcrypt.hashSync(password, 10);
-
       const info = UserDAO.insertUser({ username, hash, organizationId });
 
       try {
         UserDAO.assignDefaultRole(info.lastInsertRowid, organizationId);
       } catch (err) {
-        console.error('⚠️ Error asignando rol por defecto:', err.message);
+        console.error('⚠️ Error assigning default role:', err.message);
       }
 
-      // 3. Devolver DTO
       const user = UserDAO.selectUserById(info.lastInsertRowid);
       res.status(201).json({ message: 'ok', user: toUserDTO(user) });
     } catch (e) {
@@ -50,7 +48,7 @@ const UserController = {
         message: 'ok',
         token,
         role: roleInfo.role || null,
-        organization: roleInfo.organization || null,
+        organizationId: roleInfo.organization_id || null,
       });
     } catch (e) {
       res.status(400).json({ error: e.message });
@@ -58,7 +56,8 @@ const UserController = {
   },
 
   logout(req, res) {
-    sessions.delete(req.body.token);
+    const token = req.body.token;
+    sessions.delete(token);
     res.json({ message: 'Logged out' });
   },
 
@@ -98,6 +97,20 @@ const UserController = {
       res.status(400).json({ error: e.message });
     }
   },
+
+  assignRole(req, res) {
+    try {
+      const { roleId } = req.body;
+      const userId = Number(req.params.id);
+      if (!roleId) throw new Error("Debe indicar roleId");
+
+      const result = UserDAO.assignRoleToUser(userId, roleId);
+      res.json({ message: "Rol asignado correctamente", changes: result.changes });
+    } catch (e) {
+      res.status(400).json({ error: e.message });
+    }
+  },
+
 };
 
-module.exports = UserController;
+module.exports = { UserController, sessions };

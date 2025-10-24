@@ -7,6 +7,7 @@ require('./utils/initSuperAdmin').initSuperadmin();
 
 const userRoutes = require('./rest/UserRestController');
 const orgRoutes = require('./rest/OrganizationRestController');
+const roleRoutes = require('./rest/RoleRestController');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -20,6 +21,7 @@ app.use(bodyParser.json());
 
 app.use('/users', userRoutes);
 app.use('/organizations', orgRoutes);
+app.use('/roles', roleRoutes);
 
 app.get('/health', (_req, res) => res.send('OK'));
 app.get('/', (_req, res) => res.send('Backend Tres 3 Dos - API running'));

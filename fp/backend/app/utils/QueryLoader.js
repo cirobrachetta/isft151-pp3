@@ -1,3 +1,12 @@
+/*
+  Este módulo ya no se utiliza, lo mantengo por referencia Mati
+  para que veas cual era mi idea de tener las consultas SQL en un solo archivo XML y cargarlas dinamicamente en el código.
+
+  Este módulo carga consultas SQL desde un archivo XML y las almacena en caché para su reutilización
+  Utiliza la biblioteca 'fast-xml-parser' para analizar el XML
+  En los dao, anteriormente se casteaban las consultas SQL directamente desde el XML usando loadQuery('queryId')
+*/
+
 const fs = require('fs');
 const path = require('path');
 const { XMLParser } = require('fast-xml-parser');

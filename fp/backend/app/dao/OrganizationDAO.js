@@ -1,19 +1,21 @@
-const { loadQuery } = require('../utils/QueryLoader');
-const { getDB } = require('../../db/connection');
-
-const db = getDB();
-
-const SelectAll = db.prepare(loadQuery('organizations.selectAll'));
-const Insert = db.prepare(loadQuery('organizations.insert'));
+const { runQuery, allQuery } = require('../utils/DBUtil');
 
 const OrganizationDAO = {
   selectAll() {
-    return SelectAll.all();
+    return allQuery(`
+      SELECT id, name, contact
+      FROM organizations
+      ORDER BY name;
+    `);
   },
+
   insert({ name, contact }) {
-    const info = Insert.run({ name, contact });
+    const info = runQuery(`
+      INSERT INTO organizations (name, contact)
+      VALUES (:name, :contact);
+    `, { name, contact });
     return { id: info.lastInsertRowid, name, contact };
-  },
+  }
 };
 
 module.exports = OrganizationDAO;

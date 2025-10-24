@@ -1,63 +1,103 @@
-const { loadQuery } = require('../utils/QueryLoader');
-const { getDB } = require('../../db/connection');
+const { runQuery, getQuery, allQuery } = require('../utils/DBUtil');
 const User = require('../models/User');
-
-const db = getDB();
-
-const SelectUserByUsername = db.prepare(loadQuery('users.selectUserByUsername'));
-const SelectUserById = db.prepare(loadQuery('users.selectUserById'));
-const SelectUsers = db.prepare(loadQuery('users.selectUsers'));
-const InsertUser = db.prepare(loadQuery('users.insertUser'));
-const UpdateUserById = db.prepare(loadQuery('users.updateUserById'));
-const DeleteUserById = db.prepare(loadQuery('users.deleteUserById'));
-const ExistsUserByUsername = db.prepare(loadQuery('users.existsUserByUsername'));
-const SelectRoleAndOrgByUserId = db.prepare(loadQuery('users.selectRoleAndOrgByUserId'));
-const InsertDefaultRoleForUser = db.prepare(loadQuery('users.insertDefaultRoleForUser'));
 
 const UserDAO = {
   selectUserByUsername(username) {
-    const row = SelectUserByUsername.get({ username }) || null;
+    const row = getQuery(`
+      SELECT id, username, password_hash, active, created_at
+      FROM users
+      WHERE username = :username;
+    `, { username });
     return User.fromRow(row);
   },
 
   selectUserById(id) {
-    const row = SelectUserById.get({ id }) || null;
+    const row = getQuery(`
+      SELECT id, username, password_hash, active, created_at
+      FROM users
+      WHERE id = :id;
+    `, { id });
     return User.fromRow(row);
   },
 
   selectUsers() {
-    return SelectUsers.all().map(User.fromRow);
+    const rows = allQuery(`
+      SELECT id, username, active, created_at
+      FROM users
+      ORDER BY id;
+    `);
+    return rows.map(User.fromRow);
   },
 
   insertUser({ username, hash, organizationId }) {
-    const info = InsertUser.run({ username, hash, organizationId });
+    const info = runQuery(`
+      INSERT INTO users (username, password_hash, organization_id, active, created_at)
+      VALUES (:username, :hash, :organizationId, 1, CURRENT_TIMESTAMP);
+    `, { username, hash, organizationId });
     return { lastInsertRowid: info.lastInsertRowid, changes: info.changes };
   },
 
   updateUserById({ id, username, hash }) {
-    const info = UpdateUserById.run({ id, username, hash });
+    const info = runQuery(`
+      UPDATE users
+      SET username = :username, password_hash = :hash
+      WHERE id = :id;
+    `, { id, username, hash });
     return { changes: info.changes };
   },
 
   deleteUserById(id) {
-    const info = DeleteUserById.run({ id });
+    const info = runQuery(`
+      DELETE FROM users
+      WHERE id = :id;
+    `, { id });
     return { changes: info.changes };
   },
 
   existsUserByUsername(username) {
-    const { found } = ExistsUserByUsername.get({ username }) || {};
+    const { found } = getQuery(`
+      SELECT EXISTS(SELECT 1 FROM users WHERE username = :username) AS found;
+    `, { username }) || {};
     return Boolean(found);
   },
 
   selectRoleAndOrgByUserId(userId) {
-    return SelectRoleAndOrgByUserId.get({ userId }) || {};
+    return getQuery(`
+      SELECT r.name AS role, o.id AS organization_id
+      FROM user_roles ur
+      JOIN roles r ON r.id = ur.role_id
+      LEFT JOIN organizations o ON o.id = ur.organization_id
+      WHERE ur.user_id = :userId
+      LIMIT 1;
+    `, { userId }) || {};
   },
 
   assignDefaultRole(userId, organizationId) {
-    const info = InsertDefaultRoleForUser.run({ userId, organizationId });
+    const info = runQuery(`
+      INSERT INTO user_roles (user_id, role_id, organization_id)
+      VALUES (:userId, (SELECT id FROM roles WHERE name = 'miembro'), :organizationId);
+    `, { userId, organizationId });
     return { changes: info.changes };
   },
-  
+
+  assignRoleToUser(userId, roleId) {
+    const info = runQuery(`
+      UPDATE user_roles
+      SET role_id = :roleId
+      WHERE user_id = :userId;
+    `, { userId, roleId });
+
+    // si no tenía registro, lo insertamos
+    if (info.changes === 0) {
+      runQuery(`
+        INSERT INTO user_roles (user_id, role_id)
+        VALUES (:userId, :roleId);
+      `, { userId, roleId });
+    }
+
+    return { changes: 1 };
+  },
+
 };
 
 module.exports = UserDAO;

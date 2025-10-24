@@ -39,16 +39,30 @@ export default function DashboardView() {
 
   return (
     <div className="dashboardContainer">
+    <div className="topBar">
+      <div className="userRoleBox">
+        <span>Rol:</span>
+        <strong>{role || "Sin rol"}</strong>
+      </div>
+    </div>
+
+    {/* Contenido central */}
+    <div className="dashboardMain">
       <h1>Sistema Tres 3 Dos</h1>
       <h2>
         Bienvenido{username ? `, ${username}` : ""}{" "}
         {organization ? `(${organization})` : ""}
       </h2>
+
       <p>Seleccione un módulo para continuar:</p>
 
       <div className="dashboardGrid">
         {sections.map((s) => (
-          <button key={s.path} className="dashboardButton" onClick={() => navigate(s.path)}>
+          <button
+            key={s.path}
+            className="dashboardButton"
+            onClick={() => navigate(s.path)}
+          >
             {s.label}
           </button>
         ))}
@@ -64,5 +78,7 @@ export default function DashboardView() {
         Cerrar sesión
       </button>
     </div>
+  </div>
+
   );
 }

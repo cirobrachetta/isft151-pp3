@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { UserController } from "../controllers/UserController";
+import "../../styles/UserListView.scss";
 
 export default function UserListView() {
   const [users, setUsers] = useState([]);
@@ -12,10 +13,13 @@ export default function UserListView() {
   }, []);
 
   return (
-    <ul>
-      {users.map((u) => (
-        <li key={u.id}>{u.username}</li>
-      ))}
-    </ul>
+    <div className="usersContainer">
+      <h2>Usuarios Registrados</h2>
+      <ul>
+        {users.map((u) => (
+          <li key={u.id}>{u.username}</li>
+        ))}
+      </ul>
+    </div>
   );
 }

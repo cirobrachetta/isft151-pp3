@@ -1,4 +1,6 @@
-const API_URL = "/users";
+const API_BASE = "http://localhost:4000";
+const API_URL = `${API_BASE}/users`;
+const ORG_URL = `${API_BASE}/organizations`;
 
 async function handleResponse(res) {
   if (!res.ok) {
@@ -15,11 +17,11 @@ async function handleResponse(res) {
 }
 
 export const UserRestController = {
-  register(username, password) {
+  register(username, password, organizationId) {
     return fetch(`${API_URL}/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, organizationId }),
     }).then(handleResponse);
   },
 
@@ -42,5 +44,9 @@ export const UserRestController = {
 
   list() {
     return fetch(API_URL).then(handleResponse);
+  },
+
+  listOrganizations() {
+    return fetch(ORG_URL).then(handleResponse);
   },
 };

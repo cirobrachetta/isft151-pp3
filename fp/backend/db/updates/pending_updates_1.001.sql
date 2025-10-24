@@ -3,9 +3,10 @@
 PRAGMA foreign_keys = ON;
 
 -- Extensiones de users
-ALTER TABLE users ADD COLUMN email TEXT UNIQUE;
+ALTER TABLE users ADD COLUMN email TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email);
 ALTER TABLE users ADD COLUMN failed_attempts INTEGER NOT NULL DEFAULT 0;
-ALTER TABLE users ADD COLUMN locked_until TEXT;     -- ISO-8601 UTC
+ALTER TABLE users ADD COLUMN locked_until TEXT;
 ALTER TABLE users ADD COLUMN last_login  TEXT;
 
 -- Sesiones server-side

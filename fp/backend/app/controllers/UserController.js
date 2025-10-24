@@ -7,7 +7,8 @@ const sessions = new Map();
 const UserController = {
   register(req, res) {
     try {
-      const { username, password } = req.body;
+      const { username, password, organizationId } = req.body;
+
       if (typeof username !== 'string' || username.length < 3)
         throw new Error('Username must be at least 3 characters');
       if (!/^(?=.*[A-Z])(?=.*[!@#$%^&*])/.test(password))
@@ -16,7 +17,16 @@ const UserController = {
         throw new Error('Username already exists');
 
       const hash = bcrypt.hashSync(password, 10);
-      const info = UserDAO.insertUser({ username, hash });
+
+      const info = UserDAO.insertUser({ username, hash, organizationId });
+
+      try {
+        UserDAO.assignDefaultRole(info.lastInsertRowid, organizationId);
+      } catch (err) {
+        console.error('⚠️ Error asignando rol por defecto:', err.message);
+      }
+
+      // 3. Devolver DTO
       const user = UserDAO.selectUserById(info.lastInsertRowid);
       res.status(201).json({ message: 'ok', user: toUserDTO(user) });
     } catch (e) {
@@ -33,7 +43,15 @@ const UserController = {
 
       const token = `session-${Date.now()}-${user.id}`;
       sessions.set(token, user.id);
-      res.json({ message: 'ok', token });
+
+      const roleInfo = UserDAO.selectRoleAndOrgByUserId(user.id);
+
+      res.json({
+        message: 'ok',
+        token,
+        role: roleInfo.role || null,
+        organization: roleInfo.organization || null,
+      });
     } catch (e) {
       res.status(400).json({ error: e.message });
     }

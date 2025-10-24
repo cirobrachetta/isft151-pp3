@@ -1,0 +1,31 @@
+.usersContainer {
+  text-align: center;
+  margin-top: 5rem;
+  font-family: Arial, sans-serif;
+}
+
+.usersContainer h2 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.usersContainer ul {
+  list-style: none;
+  padding: 0;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.usersContainer li {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin: 0.5rem 0;
+  padding: 0.75rem;
+  font-size: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.usersContainer li:hover {
+  background-color: #eef5ff;
+}

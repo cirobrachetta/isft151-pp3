@@ -47,178 +47,53 @@
     ]]>
     </query>
 
-    <!-- PRODUCT SALES -->
-    <query id="sales.insertProductSale">
+    <query id="users.insertUserWithOrg">
     <![CDATA[
-    INSERT INTO product_sales (event_id, user_id, created_at)
-    VALUES (:event_id, :user_id, CURRENT_TIMESTAMP);
+        INSERT INTO users (username, password_hash, organization_id, active, created_at) 
+        VALUES (:username, :hash, :organization_id, 1, CURRENT_TIMESTAMP);
     ]]>
     </query>
 
-    <query id="sales.insertProductSaleItem">
+    <query id="users.selectUserWithOrg">
     <![CDATA[
-    INSERT INTO product_sale_items (sale_id, product_id, qty, unit_price)
-    VALUES (:sale_id, :product_id, :qty, :unit_price);
+        SELECT u.id, u.username, u.password_hash, u.active, u.created_at, o.name AS organization_name, u.organization_id
+        FROM users u
+        LEFT JOIN organizations o ON o.id = u.organization_id
+        WHERE u.id = :id;
     ]]>
     </query>
 
-    <query id="sales.selectProductSaleById">
+    <query id="organizations.selectAll">
     <![CDATA[
-    SELECT id, event_id, user_id, created_at FROM product_sales WHERE id = :id;
+        SELECT id, name, contact
+        FROM organizations
+        ORDER BY name;
     ]]>
     </query>
 
-    <query id="sales.selectProductSaleItemsBySaleId">
+    <query id="organizations.insert">
     <![CDATA[
-    SELECT sale_id, product_id, qty, unit_price FROM product_sale_items WHERE sale_id = :sale_id;
+        INSERT INTO organizations (name, contact)
+        VALUES (:name, :contact);
     ]]>
     </query>
 
-    <query id="sales.deleteProductSaleById">
+    <query id="users.selectRoleAndOrgByUserId">
     <![CDATA[
-    DELETE FROM product_sales WHERE id = :id;
+        SELECT r.name AS role, o.name AS organization
+        FROM user_roles ur
+        JOIN roles r ON r.id = ur.role_id
+        LEFT JOIN organizations o ON o.id = ur.organization_id
+        WHERE ur.user_id = :userId
+        LIMIT 1;
     ]]>
     </query>
 
-    <query id="sales.deleteProductSaleItemsBySaleId">
+    <query id="users.insertDefaultRoleForUser">
     <![CDATA[
-    DELETE FROM product_sale_items WHERE sale_id = :sale_id;
+    INSERT INTO user_roles (user_id, role_id, organization_id)
+    VALUES (:userId, (SELECT id FROM roles WHERE name = 'miembro'), :organizationId);
     ]]>
     </query>
 
-    <!-- PURCHASES -->
-    <query id="purchases.insertPurchase">
-    <![CDATA[
-    INSERT INTO purchases (supplier_id, user_id, invoice_ref, created_at)
-    VALUES (:supplier_id, :user_id, :invoice_ref, CURRENT_TIMESTAMP);
-    ]]>
-    </query>
-
-    <query id="purchases.insertPurchaseItem">
-    <![CDATA[
-    INSERT INTO purchase_items (purchase_id, product_id, qty, unit_cost)
-    VALUES (:purchase_id, :product_id, :qty, :unit_cost);
-    ]]>
-    </query>
-
-    <query id="purchases.selectPurchaseById">
-    <![CDATA[
-    SELECT id, supplier_id, user_id, invoice_ref, created_at FROM purchases WHERE id = :id;
-    ]]>
-    </query>
-
-    <query id="purchases.selectPurchaseItemsByPurchaseId">
-    <![CDATA[
-    SELECT purchase_id, product_id, qty, unit_cost FROM purchase_items WHERE purchase_id = :purchase_id;
-    ]]>
-    </query>
-
-    <query id="purchases.deletePurchaseById">
-    <![CDATA[
-    DELETE FROM purchases WHERE id = :id;
-    ]]>
-    </query>
-
-    <query id="purchases.deletePurchaseItemsByPurchaseId">
-    <![CDATA[
-    DELETE FROM purchase_items WHERE purchase_id = :purchase_id;
-    ]]>
-    </query>
-
-    <!-- PRODUCTS minimal helpers -->
-    <query id="products.selectProductById">
-    <![CDATA[
-    SELECT id, name, category_id, supplier_id, cost, price, stock, min_stock, active FROM products WHERE id = :id;
-    ]]>
-    </query>
-
-    <!-- CASH MOVEMENTS -->
-    <query id="cash.insertMovement">
-    <![CDATA[
-        INSERT INTO cash_movements (type, amount, description, created_at)
-        VALUES (:type, :amount, :description, CURRENT_TIMESTAMP);
-    ]]>
-    </query>
-
-    <query id="cash.selectAllMovements">
-    <![CDATA[
-        SELECT id, type, amount, description, created_at
-        FROM cash_movements
-        ORDER BY created_at DESC;
-    ]]>
-    </query>
-
-    <query id="cash.selectMovementById">
-    <![CDATA[
-        SELECT id, type, amount, description, created_at
-        FROM cash_movements
-        WHERE id = :id;
-    ]]>
-    </query>
-
-    <query id="cash.deleteMovementById">
-    <![CDATA[
-        DELETE FROM cash_movements WHERE id = :id;
-    ]]>
-    </query>
-
-    <!-- PAYMENTS -->
-    <query id="payments.insertPayment">
-    <![CDATA[
-        INSERT INTO payments (debt_id, amount, paid_at)
-        VALUES (:debt_id, :amount, CURRENT_TIMESTAMP);
-    ]]>
-    </query>
-
-    <query id="payments.selectPaymentsByDebtId">
-    <![CDATA[
-        SELECT id, debt_id, amount, paid_at
-        FROM payments
-        WHERE debt_id = :debt_id;
-    ]]>
-    </query>
-
-    <query id="payments.selectPaymentById">
-    <![CDATA[
-        SELECT id, debt_id, amount, paid_at
-        FROM payments
-        WHERE id = :id;
-    ]]>
-    </query>
-
-    <query id="payments.deletePaymentById">
-    <![CDATA[
-        DELETE FROM payments WHERE id = :id;
-    ]]>
-    </query>
-
-    <!-- DEBTS -->
-    <query id="debts.insertDebt">
-    <![CDATA[
-        INSERT INTO debts (entity_type, entity_id, amount, description, due_date, created_at)
-        VALUES (:entity_type, :entity_id, :amount, :description, :due_date, CURRENT_TIMESTAMP);
-    ]]>
-    </query>
-
-    <query id="debts.selectDebtById">
-    <![CDATA[
-        SELECT id, entity_type, entity_id, amount, description, due_date, created_at
-        FROM debts
-        WHERE id = :id;
-    ]]>
-    </query>
-
-    <query id="debts.selectAllDebts">
-    <![CDATA[
-        SELECT id, entity_type, entity_id, amount, description, due_date, created_at
-        FROM debts
-        ORDER BY due_date ASC;
-    ]]>
-    </query>
-
-    <query id="debts.deleteDebtById">
-    <![CDATA[
-        DELETE FROM debts WHERE id = :id;
-    ]]>
-    </query>
 </queries>

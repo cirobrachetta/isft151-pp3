@@ -1,26 +1,38 @@
-const db = require('../../db/db.js');
-const { loadQuery } = require('../utils/QueryLoader');
+const { runQuery, getQuery, allQuery } = require('../utils/DBUtil');
+const Debt = require('../models/Debt');
 
-class DebtDAO {
-  async insert(debt) {
-    const sql = loadQuery('debts.insertDebt');
-    await db.run(sql, debt);
-  }
+const DebtDAO = {
+  insert(debt) {
+    return runQuery(`
+      INSERT INTO debts (creditor, amount, due_date, description, created_at)
+      VALUES (:creditor, :amount, :due_date, :description, CURRENT_TIMESTAMP);
+    `, debt);
+  },
 
-  async findAll() {
-    const sql = loadQuery('debts.selectAllDebts');
-    return db.all(sql);
-  }
+  findAll() {
+    const rows = allQuery(`
+      SELECT id, creditor, amount, due_date, description, created_at
+      FROM debts
+      ORDER BY due_date ASC;
+    `);
+    return rows.map(Debt.fromRow);
+  },
 
-  async findById(id) {
-    const sql = loadQuery('debts.selectDebtById');
-    return db.get(sql, { id });
-  }
+  findById(id) {
+    const row = getQuery(`
+      SELECT id, creditor, amount, due_date, description, created_at
+      FROM debts
+      WHERE id = :id;
+    `, { id });
+    return row ? Debt.fromRow(row) : null;
+  },
 
-  async deleteById(id) {
-    const sql = loadQuery('debts.deleteDebtById');
-    await db.run(sql, { id });
-  }
-}
+  deleteById(id) {
+    return runQuery(`
+      DELETE FROM debts
+      WHERE id = :id;
+    `, { id });
+  },
+};
 
-module.exports = new DebtDAO();
+module.exports = DebtDAO;

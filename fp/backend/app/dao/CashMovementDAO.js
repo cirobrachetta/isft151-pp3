@@ -1,26 +1,38 @@
-const db = require('../../db/db.js');
-const { loadQuery } = require('../utils/QueryLoader');
+const { runQuery, getQuery, allQuery } = require('../utils/DBUtil');
+const CashMovement = require('../models/CashMovement');
 
-class CashMovementDAO {
-  async insert(movement) {
-    const sql = loadQuery('cash.insertMovement');
-    await db.run(sql, movement);
-  }
+const CashMovementDAO = {
+  insert(movement) {
+    return runQuery(`
+      INSERT INTO cash_movements (amount, type, description, created_at)
+      VALUES (:amount, :type, :description, CURRENT_TIMESTAMP);
+    `, movement);
+  },
 
-  async findAll() {
-    const sql = loadQuery('cash.selectAllMovements');
-    return db.all(sql);
-  }
+  findAll() {
+    const rows = allQuery(`
+      SELECT id, amount, type, description, created_at
+      FROM cash_movements
+      ORDER BY created_at DESC;
+    `);
+    return rows.map(CashMovement.fromRow);
+  },
 
-  async findById(id) {
-    const sql = loadQuery('cash.selectMovementById');
-    return db.get(sql, { id });
-  }
+  findById(id) {
+    const row = getQuery(`
+      SELECT id, amount, type, description, created_at
+      FROM cash_movements
+      WHERE id = :id;
+    `, { id });
+    return row ? CashMovement.fromRow(row) : null;
+  },
 
-  async deleteById(id) {
-    const sql = loadQuery('cash.deleteMovementById');
-    await db.run(sql, { id });
-  }
-}
+  deleteById(id) {
+    return runQuery(`
+      DELETE FROM cash_movements
+      WHERE id = :id;
+    `, { id });
+  },
+};
 
-module.exports = new CashMovementDAO();
+module.exports = CashMovementDAO;

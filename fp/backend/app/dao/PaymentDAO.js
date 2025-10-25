@@ -1,26 +1,39 @@
-const db = require('../../db/db.js');
-const { loadQuery } = require('../utils/QueryLoader');
+const { runQuery, getQuery, allQuery } = require('../utils/DBUtil');
+const Payment = require('../models/Payment');
 
-class PaymentDAO {
-  async insert(payment) {
-    const sql = loadQuery('payments.insertPayment');
-    await db.run(sql, payment);
-  }
+const PaymentDAO = {
+  insert(payment) {
+    return runQuery(`
+      INSERT INTO payments (debt_id, amount, payment_date, method, notes)
+      VALUES (:debt_id, :amount, :payment_date, :method, :notes);
+    `, payment);
+  },
 
-  async findByDebtId(debt_id) {
-    const sql = loadQuery('payments.selectPaymentsByDebtId');
-    return db.all(sql, { debt_id });
-  }
+  findByDebtId(debt_id) {
+    const rows = allQuery(`
+      SELECT id, debt_id, amount, payment_date, method, notes
+      FROM payments
+      WHERE debt_id = :debt_id
+      ORDER BY payment_date DESC;
+    `, { debt_id });
+    return rows.map(Payment.fromRow);
+  },
 
-  async findById(id) {
-    const sql = loadQuery('payments.selectPaymentById');
-    return db.get(sql, { id });
-  }
+  findById(id) {
+    const row = getQuery(`
+      SELECT id, debt_id, amount, payment_date, method, notes
+      FROM payments
+      WHERE id = :id;
+    `, { id });
+    return row ? Payment.fromRow(row) : null;
+  },
 
-  async deleteById(id) {
-    const sql = loadQuery('payments.deletePaymentById');
-    await db.run(sql, { id });
-  }
-}
+  deleteById(id) {
+    return runQuery(`
+      DELETE FROM payments
+      WHERE id = :id;
+    `, { id });
+  },
+};
 
-module.exports = new PaymentDAO();
+module.exports = PaymentDAO;

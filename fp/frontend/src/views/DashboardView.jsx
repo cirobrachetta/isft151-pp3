@@ -38,25 +38,6 @@ export default function DashboardView() {
   const sections = sectionsByRole[role] || [];
 
   return (
-<<<<<<< HEAD
-    <div style={styles.container}>
-      <h1>Bienvenido{username ? `, ${username}` : ""}</h1>
-      <p>Este es tu panel principal.</p>
-
-      <div style={styles.buttonGroup}>
-        <button onClick={() => navigate("/cash")} style={styles.button}>
-          Movimientos de Tesorería
-        </button>
-        <button onClick={() => navigate("/debts")} style={styles.button}>
-          Deudas
-        </button>
-        <button onClick={() => navigate("/payments")} style={styles.button}>
-          Pagos
-        </button>
-      </div>
-
-      <button onClick={handleLogout} style={styles.button}>
-=======
     <div className="dashboardContainer">
     <div className="topBar">
       <div className="userRoleBox">
@@ -87,6 +68,18 @@ export default function DashboardView() {
         ))}
       </div>
 
+      {/*<div style={styles.buttonGroup}>
+        <button onClick={() => navigate("/cash")} style={styles.button}>
+          Movimientos de Tesorería
+        </button>
+        <button onClick={() => navigate("/debts")} style={styles.button}>
+          Deudas
+        </button>
+        <button onClick={() => navigate("/payments")} style={styles.button}>
+          Pagos
+        </button>
+      </div>*/}
+
       <button
         className="dashboardLogout"
         onClick={() => {
@@ -94,7 +87,6 @@ export default function DashboardView() {
           navigate("/login");
         }}
       >
->>>>>>> origin/main
         Cerrar sesión
       </button>
     </div>

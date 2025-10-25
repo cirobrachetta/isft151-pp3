@@ -1,14 +1,54 @@
-.financeContainer {
+.finance-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f4f6f8;
   text-align: center;
-  margin-top: 5rem;
-  font-family: Arial, sans-serif;
 }
 
-.financeContainer h2 {
-  color: #2c3e50;
+.finance-title {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #003366;
 }
 
-.financeContainer p {
-  color: #555;
+.finance-subtitle {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.finance-button-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  width: 80%;
+  max-width: 700px;
+}
+
+.finance-button {
+  background-color: #0055a5;
+  color: white;
+  padding: 1rem 1.5rem;
+  border: none;
+  border-radius: 8px;
   font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.finance-button:hover {
+  background-color: #0073e6;
+}
+
+.finance-back {
+  margin-top: 2rem;
+  background-color: #c0392b;
+  color: white;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
 }

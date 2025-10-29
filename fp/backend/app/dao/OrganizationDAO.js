@@ -15,7 +15,16 @@ const OrganizationDAO = {
       VALUES (:name, :contact);
     `, { name, contact });
     return { id: info.lastInsertRowid, name, contact };
-  }
+  },
+
+  getOrgByUser(userId) {
+  return getQuery(`
+    SELECT organization_id
+    FROM user_roles
+    WHERE user_id = :userId
+    LIMIT 1;
+  `, { userId });
+},
 };
 
 module.exports = OrganizationDAO;

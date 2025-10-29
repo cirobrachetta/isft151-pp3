@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const UserDAO = require('../dao/UserDAO');
 const { toUserDTO, toUserListDTO } = require('../dto/UserDTO');
+const { allQuery } = require('../utils/DBUtil');
 
 const sessions = new Map();
 
@@ -32,7 +33,7 @@ const UserController = {
     }
   },
 
-  login(req, res) {
+  login: async (req, res) => {
     try {
       const { username, password } = req.body;
       const user = UserDAO.selectUserByUsername(username);
@@ -43,17 +44,26 @@ const UserController = {
       sessions.set(token, user.id);
 
       const roleInfo = UserDAO.selectRoleAndOrgByUserId(user.id);
+      let orgs = [];
+
+      if (roleInfo.role === 'administrador_general') {
+        orgs = await allQuery(`SELECT id, name FROM organizations ORDER BY name;`);
+      } else {
+        orgs = UserDAO.selectOrganizationsByUserId(user.id);
+      }
 
       res.json({
         message: 'ok',
         token,
         role: roleInfo.role || null,
+        organizations: orgs || [],
         organizationId: roleInfo.organization_id || null,
       });
     } catch (e) {
       res.status(400).json({ error: e.message });
     }
   },
+
 
   logout(req, res) {
     const token = req.body.token;

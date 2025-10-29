@@ -8,6 +8,7 @@ import InventoryView from "../views/InventoryView";
 import FinanceView from "../views/FinanceView";
 import EventsView from "../views/EventsView";
 import OrganizationsView from "../views/OrganizationView";
+import OrganizationSelectView from "../views/OrganizationSelectView";
 
 export const routesConfig = (isAuth, handleLogin) => [
   { path: "/", element: <LandingView /> },
@@ -21,6 +22,7 @@ export const routesConfig = (isAuth, handleLogin) => [
   { path: "/inventory", element: <PrivateRoute isAuth={isAuth} element={<InventoryView />} /> },
   { path: "/finance", element: <PrivateRoute isAuth={isAuth} element={<FinanceView />} /> },
   { path: "/events", element: <PrivateRoute isAuth={isAuth} element={<EventsView />} /> },
+  { path: "/select-org", element: <PrivateRoute isAuth={isAuth} element={<OrganizationSelectView />} /> },
 
   // fallback
   { path: "*", element: <LandingView /> },

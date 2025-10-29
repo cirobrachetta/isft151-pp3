@@ -68,6 +68,18 @@ export default function DashboardView() {
         ))}
       </div>
 
+      {/*<div style={styles.buttonGroup}>
+        <button onClick={() => navigate("/cash")} style={styles.button}>
+          Movimientos de Tesorería
+        </button>
+        <button onClick={() => navigate("/debts")} style={styles.button}>
+          Deudas
+        </button>
+        <button onClick={() => navigate("/payments")} style={styles.button}>
+          Pagos
+        </button>
+      </div>*/}
+
       <button
         className="dashboardLogout"
         onClick={() => {

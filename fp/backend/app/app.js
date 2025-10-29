@@ -6,6 +6,9 @@ require('../db/connection').getDB();
 require('./utils/initSuperAdmin').initSuperadmin();
 
 const userRoutes = require('./rest/UserRestController');
+const cashMovementRoutes = require("./rest/CashMovementRestController");
+const DebtRestController = require("./rest/DebtRestController");
+const PaymentRestController = require("./rest/PaymentRestController");
 const orgRoutes = require('./rest/OrganizationRestController');
 const roleRoutes = require('./rest/RoleRestController');
 const productRoutes = require('./rest/ProductRestController');
@@ -24,6 +27,10 @@ app.use('/users', userRoutes);
 app.use('/organizations', orgRoutes);
 app.use('/roles', roleRoutes);
 app.use('/products', productRoutes);
+
+app.use("/api/tesoreria/movimientos", cashMovementRoutes);
+app.use("/api/tesoreria/debts", DebtRestController);
+app.use("/api/tesoreria/payments", PaymentRestController);
 
 app.get('/health', (_req, res) => res.send('OK'));
 app.get('/', (_req, res) => res.send('Backend Tres 3 Dos - API running'));

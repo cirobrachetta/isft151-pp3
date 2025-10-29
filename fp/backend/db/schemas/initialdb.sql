@@ -8,6 +8,7 @@ CREATE TABLE users (
   username TEXT UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,
   active INTEGER NOT NULL DEFAULT 1,
+  organization_id TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE user_roles (
@@ -68,7 +69,7 @@ CREATE TABLE cash_movements (
   amount NUMERIC NOT NULL CHECK (amount >= 0),
   event_id INTEGER,
   user_id INTEGER REFERENCES users(id),
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 );
 
 -- Deudas (cuentas a pagar)

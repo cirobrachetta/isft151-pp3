@@ -3,8 +3,20 @@ const DebtDAO = require('../dao/DebtDAO');
 class DebtController {
   async create(req, res) {
     try {
-      await DebtDAO.insert(req.body);
-      res.status(201).json({ message: 'Debt created successfully' });
+      // Normalize input: accept { creditor } or { entity_type, entity_id }
+      let payload = { ...req.body };
+      if (!payload.creditor) {
+        if (payload.entity_type && payload.entity_id) {
+          payload.creditor = `${payload.entity_type}:${payload.entity_id}`;
+        } else if (payload.entity_id) {
+          payload.creditor = payload.entity_id;
+        }
+      }
+      payload.amount = Number(payload.amount);
+
+      const created = await DebtDAO.insert(payload);
+      if (created) return res.status(201).json(created);
+      return res.status(201).json({ message: 'Debt created successfully' });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

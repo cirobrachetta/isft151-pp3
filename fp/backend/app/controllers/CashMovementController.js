@@ -1,38 +1,59 @@
 const CashMovementDAO = require('../dao/CashMovementDAO');
 
 class CashMovementController {
-  async create(req, res) {
+  create(req, res) {
     try {
-      await CashMovementDAO.insert(req.body);
-      res.status(201).json({ message: 'Cash movement created successfully' });
+      // Normalizar tipos del frontend a los valores esperados por la DB
+      const typeMap = {
+        income: 'ingreso',
+        expense: 'egreso',
+        ingreso: 'ingreso',
+        egreso: 'egreso',
+      };
+      const payload = {
+        ...req.body,
+        type: typeMap[req.body.type] || req.body.type,
+        amount: Number(req.body.amount),
+      };
+
+      const created = CashMovementDAO.insert(payload);
+      // Devolver la fila creada para que el frontend tenga los campos alineados
+      if (created) {
+        return res.status(201).json(created);
+      }
+      return res.status(201).json({ message: 'Cash movement created successfully' });
     } catch (err) {
+      console.error("Error al crear movimiento:", err);
       res.status(500).json({ error: err.message });
     }
   }
 
-  async list(req, res) {
+  list(_req, res) {
     try {
-      const data = await CashMovementDAO.findAll();
+      const data = CashMovementDAO.findAll();
       res.json(data);
     } catch (err) {
+      console.error("Error al listar movimientos:", err);
       res.status(500).json({ error: err.message });
     }
   }
 
-  async get(req, res) {
+  get(req, res) {
     try {
-      const data = await CashMovementDAO.findById(req.params.id);
+      const data = CashMovementDAO.findById(req.params.id);
       res.json(data);
     } catch (err) {
+      console.error("Error al obtener movimiento:", err);
       res.status(500).json({ error: err.message });
     }
   }
 
-  async delete(req, res) {
+  delete(req, res) {
     try {
-      await CashMovementDAO.deleteById(req.params.id);
+      CashMovementDAO.deleteById(req.params.id);
       res.json({ message: 'Cash movement deleted' });
     } catch (err) {
+      console.error("Error al eliminar movimiento:", err);
       res.status(500).json({ error: err.message });
     }
   }

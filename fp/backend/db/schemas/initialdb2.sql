@@ -89,14 +89,37 @@ CREATE TABLE stock_movements (
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+------------------------------------------------------------
+-- TESORERÍA (actualizado según DAOs)
+------------------------------------------------------------
+
+-- 💵 Movimientos de caja
 CREATE TABLE cash_movements (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  type TEXT NOT NULL CHECK (type IN ('ingreso','egreso')),
-  concept TEXT NOT NULL,
   amount NUMERIC NOT NULL CHECK (amount >= 0),
-  user_id INTEGER REFERENCES users(id),
-  organization_id INTEGER REFERENCES organizations(id),
+  type TEXT NOT NULL CHECK (type IN ('ingreso', 'egreso')),
+  description TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 📜 Deudas (cuentas a pagar)
+CREATE TABLE debts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  creditor TEXT NOT NULL,
+  amount NUMERIC NOT NULL CHECK (amount > 0),
+  due_date TEXT NOT NULL,
+  description TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 💳 Pagos (asociados a deudas)
+CREATE TABLE payments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  debt_id INTEGER NOT NULL REFERENCES debts(id) ON DELETE CASCADE,
+  amount NUMERIC NOT NULL CHECK (amount > 0),
+  payment_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  method TEXT,
+  notes TEXT
 );
 
 ------------------------------------------------------------

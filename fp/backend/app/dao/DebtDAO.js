@@ -3,10 +3,20 @@ const Debt = require('../models/Debt');
 
 const DebtDAO = {
   insert(debt) {
-    return runQuery(`
+    const result = runQuery(`
       INSERT INTO debts (creditor, amount, due_date, description, created_at)
       VALUES (:creditor, :amount, :due_date, :description, CURRENT_TIMESTAMP);
     `, debt);
+
+    const id = result && result.lastInsertRowid ? result.lastInsertRowid : null;
+    if (!id) return result;
+
+    const row = getQuery(`
+      SELECT id, creditor, amount, due_date, description, created_at
+      FROM debts
+      WHERE id = :id;
+    `, { id });
+    return row ? Debt.fromRow(row) : null;
   },
 
   findAll() {

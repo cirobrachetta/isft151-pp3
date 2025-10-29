@@ -3,10 +3,21 @@ const Payment = require('../models/Payment');
 
 const PaymentDAO = {
   insert(payment) {
-    return runQuery(`
-      INSERT INTO payments (debt_id, amount, payment_date, method, notes)
-      VALUES (:debt_id, :amount, :payment_date, :method, :notes);
+    // Insert and return created row. Omit payment_date parameter to let DB default to CURRENT_TIMESTAMP
+    const result = runQuery(`
+      INSERT INTO payments (debt_id, amount, method, notes)
+      VALUES (:debt_id, :amount, :method, :notes);
     `, payment);
+
+    const id = result && result.lastInsertRowid ? result.lastInsertRowid : null;
+    if (!id) return result;
+
+    const row = getQuery(`
+      SELECT id, debt_id, amount, payment_date, method, notes
+      FROM payments
+      WHERE id = :id;
+    `, { id });
+    return row ? Payment.fromRow(row) : null;
   },
 
   findByDebtId(debt_id) {

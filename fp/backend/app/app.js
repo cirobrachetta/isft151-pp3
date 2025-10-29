@@ -27,8 +27,8 @@ app.use('/organizations', orgRoutes);
 app.use('/roles', roleRoutes);
 
 app.use("/api/tesoreria/movimientos", cashMovementRoutes);
-app.use("/api/debts", DebtRestController);
-app.use("/api/payments", PaymentRestController);
+app.use("/api/tesoreria/debts", DebtRestController);
+app.use("/api/tesoreria/payments", PaymentRestController);
 
 app.get('/health', (_req, res) => res.send('OK'));
 app.get('/', (_req, res) => res.send('Backend Tres 3 Dos - API running'));

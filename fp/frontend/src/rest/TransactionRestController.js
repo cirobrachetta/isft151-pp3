@@ -1,13 +1,26 @@
-const API_CASH = "/cash";
-const API_PAYMENTS = "/payments";
-const API_DEBTS = "/debts";
+const BASE_URL = "http://localhost:4000"; // Puerto del backend
+
+const API_CASH = `${BASE_URL}/api/tesoreria/movimientos`;
+const API_PAYMENTS = `${BASE_URL}/api/tesoreria/payments`;
+const API_DEBTS = `${BASE_URL}/api/tesoreria/debts`;
 
 async function handleResponse(res) {
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || res.statusText);
+  if (!res || typeof res.json !== "function") {
+    throw new Error("Respuesta inválida del servidor");
   }
-  return res.json();
+
+  let data = null;
+  try {
+    data = await res.json();
+  } catch (err) {
+    console.warn("No se pudo parsear JSON:", err);
+  }
+
+  if (!res.ok) {
+    throw new Error((data && data.error) || res.statusText || "Error desconocido");
+  }
+
+  return data;
 }
 
 export const TransactionRestController = {

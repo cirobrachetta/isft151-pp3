@@ -69,7 +69,7 @@ CREATE TABLE cash_movements (
   amount NUMERIC NOT NULL CHECK (amount >= 0),
   event_id INTEGER,
   user_id INTEGER REFERENCES users(id),
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 );
 
 -- Deudas (cuentas a pagar)

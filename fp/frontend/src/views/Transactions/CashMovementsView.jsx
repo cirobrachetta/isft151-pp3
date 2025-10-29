@@ -3,7 +3,8 @@ import { TransactionController } from "../../controllers/TransactionController";
 
 export default function CashMovementsView() {
   const [movements, setMovements] = useState([]);
-  const [form, setForm] = useState({ type: "income", amount: "", description: "" });
+  // El backend espera 'ingreso' o 'egreso' en la columna "type"
+  const [form, setForm] = useState({ type: "ingreso", amount: "", description: "" });
 
   useEffect(() => {
     loadData();
@@ -16,9 +17,15 @@ export default function CashMovementsView() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    await TransactionController.createCashMovement(form);
-    setForm({ type: "income", amount: "", description: "" });
-    loadData();
+    // Asegurarse de enviar el tipo esperado por la DB y que el amount sea numérico
+    const payload = { ...form, amount: Number(form.amount) };
+    try {
+      await TransactionController.createCashMovement(payload);
+      setForm({ type: "ingreso", amount: "", description: "" });
+      await loadData();
+    } catch (err) {
+      console.error('Error creando movimiento:', err);
+    }
   }
 
   async function handleDelete(id) {
@@ -34,8 +41,8 @@ export default function CashMovementsView() {
           value={form.type}
           onChange={(e) => setForm({ ...form, type: e.target.value })}
         >
-          <option value="income">Income</option>
-          <option value="expense">Expense</option>
+          <option value="ingreso">Income</option>
+          <option value="egreso">Expense</option>
         </select>
         <input
           type="number"

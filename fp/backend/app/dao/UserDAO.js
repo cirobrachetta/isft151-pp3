@@ -99,6 +99,17 @@ const UserDAO = {
     return { changes: 1 };
   },
 
+  selectOrganizationsByUserId(userId) {
+    return allQuery(`
+      SELECT o.id, o.name
+      FROM user_roles ur
+      JOIN organizations o ON o.id = ur.organization_id
+      WHERE ur.user_id = :userId
+      ORDER BY o.name;
+    `, { userId });
+  },
+
+
 };
 
 module.exports = UserDAO;

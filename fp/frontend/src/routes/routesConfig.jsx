@@ -13,6 +13,7 @@ import PrivateRoute from "../components/PrivateRoute";
 import InventoryView from "../views/InventoryView";
 import EventsView from "../views/EventsView";
 import OrganizationsView from "../views/OrganizationView";
+import OrganizationSelectView from "../views/OrganizationSelectView";
 
 export const routesConfig = (isAuth, handleLogin) => [
   { path: "/", element: <LandingView /> },
@@ -28,6 +29,7 @@ export const routesConfig = (isAuth, handleLogin) => [
   { path: "/debts", element: <PrivateRoute isAuth={isAuth} element={<DebtsView />} />,},
   { path: "/payments", element: <PrivateRoute isAuth={isAuth} element={<PaymentsView />} />,},
   { path: "/events", element: <PrivateRoute isAuth={isAuth} element={<EventsView />} /> },
+  { path: "/select-org", element: <PrivateRoute isAuth={isAuth} element={<OrganizationSelectView />} /> },
   { path: "/finance", element: <PrivateRoute isAuth={isAuth} element={<FinanceView />} /> },
 
   // fallback

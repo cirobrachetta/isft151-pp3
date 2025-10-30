@@ -1,4 +1,6 @@
-node fp/backend/db/run-sql.js exec fp/backend/db/schemas initialdb.sql
+inicializar:-> desde DB
+node init.js
+
+para updates:->
 node fp/backend/db/run-sql.js exec fp/backend/db/updates pending_updates_1.001.sql
-node fp/backend/db/run-sql.js exec fp/backend/db/updates pending_updates_1.002.sql
-node fp/backend/db/run-sql.js exec fp/backend/db/updates pending_updates_1.003.sql
+

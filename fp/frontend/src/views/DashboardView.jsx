@@ -48,7 +48,7 @@ export default function DashboardView() {
 
     {/* Contenido central */}
     <div className="dashboardMain">
-      <h1>Sistema Tres 3 Dos</h1>
+      <h1>Sistema {organization || "Tres 3 Dos"}</h1>
       <h2>
         Bienvenido{username ? `, ${username}` : ""}{" "}
         {organization ? `(${organization})` : ""}

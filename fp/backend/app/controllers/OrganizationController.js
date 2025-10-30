@@ -20,6 +20,28 @@ const OrganizationController = {
       res.status(400).json({ error: e.message });
     }
   },
+  get(req, res) {
+    try {
+      const id = Number(req.params.id);
+      const org = OrganizationDAO.findById(id);
+      if (!org) return res.status(404).json({ error: 'Organization not found' });
+      res.json(org);
+    } catch (e) {
+      res.status(400).json({ error: e.message });
+    }
+  },
+
+  updateBudget(req, res) {
+    try {
+      const id = Number(req.params.id);
+      const delta = Number(req.body.delta);
+      if (isNaN(delta)) return res.status(400).json({ error: 'delta must be a number' });
+      const org = OrganizationDAO.incrementBudget(id, delta);
+      res.json(org);
+    } catch (e) {
+      res.status(400).json({ error: e.message });
+    }
+  },
 };
 
 module.exports = OrganizationController;

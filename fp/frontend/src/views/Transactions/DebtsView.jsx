@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { TransactionController } from "../../controllers/TransactionController";
-
+import BudgetWidget from '../../components/BudgetWidget';
 export default function DebtsView() {
   const [debts, setDebts] = useState([]);
+  const [activeTab, setActiveTab] = useState('open'); // 'open' or 'paid'
+  
   const [form, setForm] = useState({
     entity_type: "customer",
     entity_id: "",
@@ -34,6 +36,7 @@ export default function DebtsView() {
 
   return (
     <div style={styles.container}>
+      <BudgetWidget />
       <h2>Debts</h2>
       <form onSubmit={handleSubmit} style={styles.form}>
         <select
@@ -71,23 +74,32 @@ export default function DebtsView() {
         <button type="submit">Add</button>
       </form>
 
+      <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
+        <button onClick={() => setActiveTab('open')} style={activeTab === 'open' ? styles.activeTab : styles.tab}>Open Debts</button>
+        <button onClick={() => setActiveTab('paid')} style={activeTab === 'paid' ? styles.activeTab : styles.tab}>Paid Debts</button>
+      </div>
+
       <table style={styles.table}>
         <thead>
           <tr>
             <th>ID</th>
             <th>Entity</th>
             <th>Amount</th>
+            <th>Remaining</th>
             <th>Description</th>
             <th>Due</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          {debts.map((d) => (
+          {debts
+            .filter(d => (activeTab === 'open' ? Number(d.amount_remaining) > 0 : Number(d.amount_remaining) <= 0))
+            .map((d) => (
             <tr key={d.id}>
               <td>{d.id}</td>
               <td>{d.entity_type} #{d.entity_id}</td>
               <td>{d.amount}</td>
+              <td>{d.amount_remaining != null ? d.amount_remaining : ''}</td>
               <td>{d.description}</td>
               <td>{new Date(d.due_date).toLocaleDateString()}</td>
               <td>
@@ -105,4 +117,6 @@ const styles = {
   container: { padding: "1rem" },
   form: { display: "flex", gap: "0.5rem", marginBottom: "1rem" },
   table: { width: "100%", borderCollapse: "collapse" },
+  tab: { marginRight: '0.5rem', padding: '0.4rem 0.8rem' },
+  activeTab: { marginRight: '0.5rem', padding: '0.4rem 0.8rem', fontWeight: 'bold', background: '#eee' },
 };

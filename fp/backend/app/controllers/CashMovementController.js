@@ -16,10 +16,13 @@ class CashMovementController {
         amount: Number(req.body.amount),
       };
 
-      const created = CashMovementDAO.insert(payload);
-      // Devolver la fila creada para que el frontend tenga los campos alineados
-      if (created) {
-        return res.status(201).json(created);
+      // insert and apply to organization budget atomically
+      try {
+        const result = CashMovementDAO.insertAndApplyToBudget(payload, req.body.organization_id || null);
+        if (result) return res.status(201).json(result);
+      } catch (e) {
+        console.error('Error creating cash movement with budget update:', e && e.message);
+        return res.status(500).json({ error: e && e.message });
       }
       return res.status(201).json({ message: 'Cash movement created successfully' });
     } catch (err) {

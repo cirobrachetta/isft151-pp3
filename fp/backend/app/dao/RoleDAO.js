@@ -2,11 +2,12 @@ const { allQuery } = require('../utils/DBUtil');
 
 const RoleDAO = {
   selectAll() {
-    return allQuery(`
+    const rows = allQuery(`
       SELECT id, name, organization_scope
       FROM roles
       ORDER BY id;
     `);
+    return rows || [];
   }
 };
 

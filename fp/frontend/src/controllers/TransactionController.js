@@ -16,6 +16,9 @@ export const TransactionController = {
   async listPaymentsByDebt(debtId) {
     return TransactionRestController.listPaymentsByDebt(debtId);
   },
+  async listPayments() {
+    return TransactionRestController.listPayments();
+  },
   async createPayment(data) {
     return TransactionRestController.createPayment(data);
   },

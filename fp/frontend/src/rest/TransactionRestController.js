@@ -54,6 +54,10 @@ export const TransactionRestController = {
     return fetch(`${API_PAYMENTS}/${id}`, { method: "DELETE" }).then(handleResponse);
   },
 
+  listPayments() {
+    return fetch(API_PAYMENTS).then(handleResponse);
+  },
+
   // 📜 DEBTS
   listDebts() {
     return fetch(API_DEBTS).then(handleResponse);

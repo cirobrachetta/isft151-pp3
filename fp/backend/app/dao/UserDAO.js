@@ -26,6 +26,7 @@ const UserDAO = {
       FROM users
       ORDER BY id;
     `);
+    if (!rows || !Array.isArray(rows)) return [];
     return rows.map(User.fromRow);
   },
 

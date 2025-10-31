@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { EventController } from "../controllers/EventController.js";
 import BackButton from "../components/BackButton";
+import { TransactionController } from "../controllers/TransactionController";
+import { ProductController } from "../controllers/ProductController"; // nuevo
 
 export default function EventDetailView() {
   const { id } = useParams();
@@ -9,6 +11,7 @@ export default function EventDetailView() {
   const [products, setProducts] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [search, setSearch] = useState("");
+  const [editModal, setEditModal] = useState({ visible: false, item: null, newQty: 0 });
 
   const load = async () => {
     const { event, products, reservations } = await EventController.loadDetail(id);
@@ -19,18 +22,128 @@ export default function EventDetailView() {
 
   useEffect(() => { load(); }, [id]);
 
+  // --- ASIGNAR PRODUCTO ---
   const assign = async (productId, qty) => {
     if (!qty || qty <= 0) return alert("Cantidad inválida");
+    const product = products.find(p => p.id === productId);
+    if (!product) return alert("Producto no encontrado");
+
+    // STOCK INSUFICIENTE → CREAR DEUDA + REABASTECER + CONSUMIR
+    if (qty > product.stock) {
+      const faltante = qty - product.stock;
+      const confirmPurchase = window.confirm(
+        `Stock insuficiente (${product.stock} disponibles). ¿Desea solicitar compra automática de ${faltante} unidades?`
+      );
+      if (!confirmPurchase) return;
+
+      try {
+        const estimatedAmount =
+          product.unit_cost && product.unit_cost > 0
+            ? product.unit_cost * faltante
+            : faltante * 1;
+
+        await TransactionController.createDebt({
+          entity_type: "supplier",
+          entity_id: productId,
+          amount: estimatedAmount,
+          description: `Compra automática de ${faltante} "${product.name}" por stock insuficiente`,
+          due_date: new Date().toISOString().slice(0, 10),
+        });
+
+        // actualizar stock sumando las unidades faltantes
+        const nuevoStock = product.stock + faltante;
+        await ProductController.updateStock(productId, nuevoStock);
+
+        // luego consumir las unidades (reserva)
+        await EventController.assignProduct(id, productId, qty);
+        alert("Stock actualizado y deuda creada correctamente en Tesorería.");
+      } catch (err) {
+        console.error("Error al crear deuda o actualizar stock:", err);
+        alert("Error al procesar la compra automática.");
+      }
+      return load();
+    }
+
+    // STOCK SUFICIENTE
     await EventController.assignProduct(id, productId, qty);
     load();
   };
 
+  // --- EDITAR ASIGNACIÓN ---
   const updateAssigned = async (productId, qty) => {
     if (!qty || qty <= 0) return alert("Cantidad inválida");
+
+    const assigned = reservations.find(r => r.product_id === productId);
+    const product = products.find(p => p.id === productId);
+    if (!assigned || !product) return alert("Error interno: producto no encontrado.");
+
+    const diff = qty - assigned.qty;
+    const newStock = product.stock - diff;
+
+    // STOCK INSUFICIENTE → CREAR DEUDA + SUMAR STOCK + CONSUMIR
+    if (newStock < 0) {
+      const faltante = Math.abs(newStock);
+      const confirmPurchase = window.confirm(
+        `Stock insuficiente (${product.stock} disponibles). ¿Desea solicitar compra automática de ${faltante} unidades?`
+      );
+      if (!confirmPurchase) return;
+
+      try {
+        const organizationId = localStorage.getItem("organization");
+        const estimatedAmount =
+          product.unit_cost && product.unit_cost > 0
+            ? product.unit_cost * faltante
+            : faltante * 1;
+
+        // 1️⃣ Crear deuda
+        await TransactionController.createDebt({
+          entity_type: "supplier",
+          entity_id: productId,
+          amount: estimatedAmount,
+          description: `Compra automática de ${faltante} "${product.name}" por stock insuficiente`,
+          due_date: new Date().toISOString().slice(0, 10),
+          organization_id: organizationId,
+        });
+
+        // 2️⃣ Reponer inventario sumando faltante
+        const nuevoStock = product.stock + faltante;
+        await ProductController.updateStock(productId, nuevoStock);
+
+        // 3️⃣ Consumir unidades (actualizar asignación)
+        await EventController.updateAssignedProduct(id, productId, qty);
+        alert("Stock actualizado y deuda creada correctamente en Tesorería.");
+      } catch (err) {
+        console.error("Error creando deuda o actualizando stock:", err);
+        alert("Error al procesar la compra automática.");
+      }
+      return load();
+    }
+
+    // STOCK SUFICIENTE
     await EventController.updateAssignedProduct(id, productId, qty);
+    setProducts(prev =>
+      prev.map(p => (p.id === productId ? { ...p, stock: newStock } : p))
+    );
     load();
   };
 
+  // --- MODAL ---
+  const openEditModal = (r) => {
+    const product = products.find(p => p.id === r.product_id);
+    setEditModal({
+      visible: true,
+      item: { ...r, stock: product?.stock || 0 },
+      newQty: r.qty,
+    });
+  };
+
+  const handleSaveEdit = async () => {
+    const { item, newQty } = editModal;
+    await updateAssigned(item.product_id, parseInt(newQty));
+    setEditModal({ visible: false, item: null, newQty: 0 });
+  };
+
+  // --- ELIMINAR ASIGNACIÓN ---
   const removeAssigned = async (productId) => {
     if (!window.confirm("¿Eliminar esta asignación?")) return;
     await EventController.removeAssignedProduct(id, productId);
@@ -53,7 +166,7 @@ export default function EventDetailView() {
         </div>
       )}
 
-      {/* Productos */}
+      {/* Asignar productos */}
       <h2>Asignar productos</h2>
       <input
         type="text"
@@ -118,7 +231,7 @@ export default function EventDetailView() {
         </table>
       </div>
 
-      {/* Asignados */}
+      {/* Productos asignados */}
       <h2 style={{ marginTop: "2rem" }}>Productos asignados</h2>
       <div style={{ maxHeight: "250px", overflowY: "auto", border: "1px solid #ddd" }}>
         <table className="inventoryTable" style={{ width: "100%" }}>
@@ -133,27 +246,10 @@ export default function EventDetailView() {
             {reservations.map(r => (
               <tr key={r.id}>
                 <td>{r.name}</td>
-                <td>
-                  <input
-                    type="number"
-                    min="1"
-                    value={r.editQty ?? r.qty}
-                    onChange={e => {
-                      const newVal = e.target.value;
-                      setReservations(prev =>
-                        prev.map(x =>
-                          x.id === r.id ? { ...x, editQty: newVal } : x
-                        )
-                      );
-                    }}
-                    style={{ width: "70px" }}
-                  />
-                </td>
+                <td>{r.qty}</td>
                 <td>
                   <button
-                    onClick={() =>
-                      updateAssigned(r.product_id, parseInt(r.editQty ?? r.qty))
-                    }
+                    onClick={() => openEditModal(r)}
                     style={{
                       backgroundColor: "#2563eb",
                       color: "white",
@@ -164,7 +260,7 @@ export default function EventDetailView() {
                       cursor: "pointer",
                     }}
                   >
-                    Guardar
+                    Editar
                   </button>
                   <button
                     onClick={() => removeAssigned(r.product_id)}
@@ -186,8 +282,66 @@ export default function EventDetailView() {
         </table>
       </div>
 
-      {/* Botón reutilizable */}
       <BackButton label="← Volver a eventos" to="/events" />
+
+      {/* Modal */}
+      {editModal.visible && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(0,0,0,0.5)",
+          display: "flex", justifyContent: "center", alignItems: "center"
+        }}>
+          <div style={{
+            background: "white", padding: "2rem", borderRadius: "8px",
+            width: "400px", boxShadow: "0 2px 8px rgba(0,0,0,0.2)"
+          }}>
+            <h3>Editar asignación</h3>
+            <p><b>Producto:</b> {editModal.item.name}</p>
+            <p><b>Stock disponible:</b> {editModal.item.stock}</p>
+            <p><b>Cantidad actual:</b> {editModal.item.qty}</p>
+            <div style={{ marginTop: "1rem" }}>
+              <label>Nueva cantidad:</label>
+              <input
+                type="number"
+                value={editModal.newQty}
+                min="1"
+                max={editModal.item.stock + editModal.item.qty}
+                onChange={e => setEditModal({ ...editModal, newQty: e.target.value })}
+                style={{ width: "100%", padding: "6px", marginTop: "4px" }}
+              />
+            </div>
+            <div style={{ marginTop: "1.5rem", textAlign: "right" }}>
+              <button
+                onClick={handleSaveEdit}
+                style={{
+                  backgroundColor: "#2563eb",
+                  color: "white",
+                  padding: "6px 12px",
+                  border: "none",
+                  borderRadius: "4px",
+                  marginRight: "8px",
+                  cursor: "pointer",
+                }}
+              >
+                Guardar
+              </button>
+              <button
+                onClick={() => setEditModal({ visible: false, item: null, newQty: 0 })}
+                style={{
+                  backgroundColor: "#9ca3af",
+                  color: "white",
+                  padding: "6px 12px",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

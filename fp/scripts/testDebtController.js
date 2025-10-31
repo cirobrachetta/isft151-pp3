@@ -7,3 +7,4 @@ const res = {
 };
 
 DebtController.create(req, res).catch(err => console.error('controller error', err));
+console.log("📦 Nuevo registro de deuda recibido:", req.body);

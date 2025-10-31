@@ -115,19 +115,28 @@ const EventDAO = {
     }
   },
 
-  updateAssignedProduct(eventId, productId, qty) {
-  const existing = getQuery(`
-    SELECT id FROM event_products
-    WHERE event_id = :eventId AND product_id = :productId;
-  `, { eventId, productId });
+  updateAssignedProduct(eventId, productId, newQty) {
+    const existing = getQuery(`
+      SELECT id, qty FROM event_products
+      WHERE event_id = :eventId AND product_id = :productId;
+    `, { eventId, productId });
 
-  if (!existing) throw new Error("Asignación no encontrada");
+    if (!existing) throw new Error("Asignación no encontrada");
 
-  runQuery(`
+    const oldQty = existing.qty;
+    const diff = newQty - oldQty;
+
+    runQuery(`
       UPDATE event_products
-      SET qty = :qty
+      SET qty = :newQty
       WHERE id = :id;
-    `, { qty, id: existing.id });
+    `, { newQty, id: existing.id });
+
+    runQuery(`
+      UPDATE products
+      SET stock = stock - :diff
+      WHERE id = :productId;
+    `, { diff, productId });
 
     return { changes: 1 };
   },

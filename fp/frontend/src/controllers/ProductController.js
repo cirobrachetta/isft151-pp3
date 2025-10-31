@@ -20,4 +20,10 @@ export const ProductController = {
   async deactivate(id, active) {
     return ProductRestController.deactivate(id, active);
   },
+
+  async updateStock(id, newStock) {
+    return ProductRestController.update(id, { stock: Number(newStock) });
+  },
+
+  
 };

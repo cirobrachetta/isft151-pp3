@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { TransactionController } from "../../controllers/TransactionController";
 import BudgetWidget from '../../components/BudgetWidget';
+import BackButton from "../../components/BackButton";
 export default function DebtsView() {
   const [debts, setDebts] = useState([]);
   const [activeTab, setActiveTab] = useState('open'); // 'open' or 'paid'
@@ -109,6 +110,7 @@ export default function DebtsView() {
           ))}
         </tbody>
       </table>
+      <BackButton label="← Volver a Finansas" to="/dashboard" />
     </div>
   );
 }

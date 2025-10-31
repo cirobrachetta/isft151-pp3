@@ -3,6 +3,7 @@ import { TransactionController } from "../../controllers/TransactionController";
 import '../../components/AddPaymentModal'; // register web component
 import BudgetWidget from '../../components/BudgetWidget';
 import { OrganizationController } from '../../controllers/OrganizationController';
+import BackButton from "../../components/BackButton";
 
 export default function PaymentsView() {
   const [debtId, setDebtId] = useState("");
@@ -145,6 +146,7 @@ export default function PaymentsView() {
           ))}
         </tbody>
       </table>
+      <BackButton label="← Volver a Finansas" to="/dashboard" />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { TransactionController } from "../../controllers/TransactionController";
 import { OrganizationController } from '../../controllers/OrganizationController';
 import BudgetWidget from '../../components/BudgetWidget';
+import BackButton from "../../components/BackButton";
 
 export default function IncomesView() {
   const [movements, setMovements] = useState([]);
@@ -111,6 +112,7 @@ export default function IncomesView() {
           )) }
         </tbody>
       </table>
+      <BackButton label="← Volver a Finansas" to="/dashboard" />
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { EventController } from "../controllers/EventController.js";
 import BackButton from "../components/BackButton";
 import { TransactionController } from "../controllers/TransactionController";
-import { ProductController } from "../controllers/ProductController"; // nuevo
+import { ProductController } from "../controllers/ProductController";
 
 export default function EventDetailView() {
   const { id } = useParams();
@@ -12,6 +12,13 @@ export default function EventDetailView() {
   const [reservations, setReservations] = useState([]);
   const [search, setSearch] = useState("");
   const [editModal, setEditModal] = useState({ visible: false, item: null, newQty: 0 });
+
+  // 💰 Nueva estructura para deuda pendiente
+  const [pendingDebt, setPendingDebt] = useState({
+    visible: false,
+    items: [], // { productId, name, faltante, unitCost, subtotal }
+    description: "",
+  });
 
   const load = async () => {
     const { event, products, reservations } = await EventController.loadDetail(id);
@@ -28,43 +35,30 @@ export default function EventDetailView() {
     const product = products.find(p => p.id === productId);
     if (!product) return alert("Producto no encontrado");
 
-    // STOCK INSUFICIENTE → CREAR DEUDA + REABASTECER + CONSUMIR
     if (qty > product.stock) {
       const faltante = qty - product.stock;
-      const confirmPurchase = window.confirm(
-        `Stock insuficiente (${product.stock} disponibles). ¿Desea solicitar compra automática de ${faltante} unidades?`
+      const subtotal = (product.cost || 0) * faltante;
+
+      const confirmAdd = window.confirm(
+        `Stock insuficiente (${product.stock} disponibles). ¿Desea agregar ${faltante} unidades de "${product.name}" a una deuda pendiente?`
       );
-      if (!confirmPurchase) return;
+      if (!confirmAdd) return;
 
-      try {
-        const estimatedAmount =
-          product.unit_cost && product.unit_cost > 0
-            ? product.unit_cost * faltante
-            : faltante * 1;
+      setPendingDebt(prev => ({
+        visible: true,
+        items: [...prev.items, {
+          productId: product.id,
+          name: product.name,
+          faltante,
+          unitCost: product.cost || 0,
+          subtotal
+        }],
+      }));
 
-        await TransactionController.createDebt({
-          entity_type: "supplier",
-          entity_id: productId,
-          amount: estimatedAmount,
-          description: `Compra automática de ${faltante} "${product.name}" por stock insuficiente`,
-          due_date: new Date().toISOString().slice(0, 10),
-        });
-
-        // actualizar stock sumando las unidades faltantes
-        const nuevoStock = product.stock + faltante;
-        await ProductController.updateStock(productId, nuevoStock);
-
-        // luego consumir las unidades (reserva)
-        await EventController.assignProduct(id, productId, qty);
-        alert("Stock actualizado y deuda creada correctamente en Tesorería.");
-      } catch (err) {
-        console.error("Error al crear deuda o actualizar stock:", err);
-        alert("Error al procesar la compra automática.");
-      }
-      return load();
+      return;
     }
 
-    // STOCK SUFICIENTE
+    // Stock suficiente → reservar normalmente
     await EventController.assignProduct(id, productId, qty);
     load();
   };
@@ -80,46 +74,29 @@ export default function EventDetailView() {
     const diff = qty - assigned.qty;
     const newStock = product.stock - diff;
 
-    // STOCK INSUFICIENTE → CREAR DEUDA + SUMAR STOCK + CONSUMIR
     if (newStock < 0) {
       const faltante = Math.abs(newStock);
-      const confirmPurchase = window.confirm(
-        `Stock insuficiente (${product.stock} disponibles). ¿Desea solicitar compra automática de ${faltante} unidades?`
+      const subtotal = (product.cost || 0) * faltante;
+
+      const confirmAdd = window.confirm(
+        `Stock insuficiente (${product.stock} disponibles). ¿Desea agregar ${faltante} unidades de "${product.name}" a una deuda pendiente?`
       );
-      if (!confirmPurchase) return;
+      if (!confirmAdd) return;
 
-      try {
-        const organizationId = localStorage.getItem("organization");
-        const estimatedAmount =
-          product.unit_cost && product.unit_cost > 0
-            ? product.unit_cost * faltante
-            : faltante * 1;
+      setPendingDebt(prev => ({
+        visible: true,
+        items: [...prev.items, {
+          productId: product.id,
+          name: product.name,
+          faltante,
+          unitCost: product.cost || 0,
+          subtotal
+        }],
+      }));
 
-        // 1️⃣ Crear deuda
-        await TransactionController.createDebt({
-          entity_type: "supplier",
-          entity_id: productId,
-          amount: estimatedAmount,
-          description: `Compra automática de ${faltante} "${product.name}" por stock insuficiente`,
-          due_date: new Date().toISOString().slice(0, 10),
-          organization_id: organizationId,
-        });
-
-        // 2️⃣ Reponer inventario sumando faltante
-        const nuevoStock = product.stock + faltante;
-        await ProductController.updateStock(productId, nuevoStock);
-
-        // 3️⃣ Consumir unidades (actualizar asignación)
-        await EventController.updateAssignedProduct(id, productId, qty);
-        alert("Stock actualizado y deuda creada correctamente en Tesorería.");
-      } catch (err) {
-        console.error("Error creando deuda o actualizando stock:", err);
-        alert("Error al procesar la compra automática.");
-      }
-      return load();
+      return;
     }
 
-    // STOCK SUFICIENTE
     await EventController.updateAssignedProduct(id, productId, qty);
     setProducts(prev =>
       prev.map(p => (p.id === productId ? { ...p, stock: newStock } : p))
@@ -127,7 +104,7 @@ export default function EventDetailView() {
     load();
   };
 
-  // --- MODAL ---
+  // --- MODAL EDICIÓN ---
   const openEditModal = (r) => {
     const product = products.find(p => p.id === r.product_id);
     setEditModal({
@@ -150,10 +127,47 @@ export default function EventDetailView() {
     load();
   };
 
+  // --- CREAR DEUDA FINAL ---
+  const createDebtFromPending = async () => {
+    if (pendingDebt.items.length === 0) return alert("No hay productos en la deuda.");
+    const total = pendingDebt.items.reduce((sum, item) => sum + item.subtotal, 0);
+
+    try {
+      await TransactionController.createDebt({
+        creditor: "Encargado de eventos",
+        amount: total,
+        description:
+          pendingDebt.description ||
+          `Compra automática de ${pendingDebt.items.length} productos por reposición de stock.`,
+        due_date: new Date().toISOString().slice(0, 10),
+      });
+
+      for (const item of pendingDebt.items) {
+        const product = products.find(p => p.id === item.productId);
+        if (!product) continue;
+
+        // reponer stock
+        const nuevoStock = product.stock + item.faltante;
+        await ProductController.updateStock(item.productId, nuevoStock);
+
+        const totalSolicitado = product.stock + item.faltante;
+        await EventController.assignProduct(id, item.productId, totalSolicitado);
+      }
+
+      alert("Stock actualizado, productos asignados y deuda creada correctamente.");
+      setPendingDebt({ visible: false, items: [], description: "" });
+      load();
+    } catch (err) {
+      console.error(err);
+      alert("Error al registrar la deuda.");
+    }
+  };
+
   const filteredProducts = products.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  // --- RENDER ---
   return (
     <div className="inventoryContainer" style={{ padding: "2rem" }}>
       <h1 style={{ textAlign: "center", color: "#1a365d" }}>Detalle del evento</h1>
@@ -183,7 +197,7 @@ export default function EventDetailView() {
       />
 
       <div style={{ maxHeight: "250px", overflowY: "auto", border: "1px solid #ddd" }}>
-        <table className="inventoryTable" style={{ width: "100%" }}>
+        <table style={{ width: "100%" }}>
           <thead style={{ position: "sticky", top: 0, background: "#f3f4f6" }}>
             <tr>
               <th>Producto</th>
@@ -234,7 +248,7 @@ export default function EventDetailView() {
       {/* Productos asignados */}
       <h2 style={{ marginTop: "2rem" }}>Productos asignados</h2>
       <div style={{ maxHeight: "250px", overflowY: "auto", border: "1px solid #ddd" }}>
-        <table className="inventoryTable" style={{ width: "100%" }}>
+        <table style={{ width: "100%" }}>
           <thead style={{ position: "sticky", top: 0, background: "#f3f4f6" }}>
             <tr>
               <th>Producto</th>
@@ -281,6 +295,66 @@ export default function EventDetailView() {
           </tbody>
         </table>
       </div>
+
+      {/* Tabla de deuda pendiente */}
+      {pendingDebt.visible && (
+        <div style={{ marginTop: "2rem", border: "1px solid #ddd", padding: "1rem" }}>
+          <h3>Nueva deuda pendiente</h3>
+          <table style={{ width: "100%", marginBottom: "1rem" }}>
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Faltante</th>
+                <th>Precio unitario</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pendingDebt.items.map((item, i) => (
+                <tr key={i}>
+                  <td>{item.name}</td>
+                  <td>{item.faltante}</td>
+                  <td>${item.unitCost}</td>
+                  <td>${item.subtotal}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <label>Descripción de la deuda:</label>
+          <textarea
+            value={pendingDebt.description}
+            onChange={(e) => setPendingDebt({ ...pendingDebt, description: e.target.value })}
+            style={{ width: "100%", height: "80px", marginBottom: "10px" }}
+          />
+
+          <button
+            style={{
+              backgroundColor: "#2563eb",
+              color: "white",
+              padding: "8px 12px",
+              border: "none",
+              borderRadius: "4px",
+            }}
+            onClick={createDebtFromPending}
+          >
+            solicitar deuda
+          </button>
+          <button
+            style={{
+              backgroundColor: "#9ca3af",
+              color: "white",
+              padding: "8px 12px",
+              border: "none",
+              borderRadius: "4px",
+              marginLeft: "8px",
+            }}
+            onClick={() => setPendingDebt({ visible: false, items: [], description: "" })}
+          >
+            Cancelar
+          </button>
+        </div>
+      )}
 
       <BackButton label="← Volver a eventos" to="/events" />
 

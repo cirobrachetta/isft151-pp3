@@ -113,6 +113,21 @@ class AddPaymentModal extends HTMLElement {
       // If backend returned updated organization (budget changed), emit global event so BudgetWidget updates
       if (body && body.organization) {
         document.dispatchEvent(new CustomEvent('budget-updated', { detail: body.organization, bubbles: true }));
+      } else if (orgId) {
+        // Fallback: if backend didn't return organization, fetch it explicitly and emit event so UI stays in sync
+        try {
+          const org = await OrganizationController.getOrganization(orgId);
+          if (org) document.dispatchEvent(new CustomEvent('budget-updated', { detail: org, bubbles: true }));
+        } catch (e) {
+          // ignore; widget will refresh on next load
+        }
+      } else {
+        // If no orgId provided, try to emit the first org as fallback
+        try {
+          const list = await OrganizationController.listOrganizations();
+          const first = Array.isArray(list) && list.length ? list[0] : null;
+          if (first) document.dispatchEvent(new CustomEvent('budget-updated', { detail: first, bubbles: true }));
+        } catch (e) { /* ignore */ }
       }
       this.dispatchEvent(new CustomEvent('payment-added', { detail: body, bubbles: true, composed: true }));
       this.showMessage('Pago creado', true);

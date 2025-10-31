@@ -8,4 +8,12 @@ export const OrganizationController = {
   async createOrganization(name, contact) {
     return OrganizationRestController.create(name, contact);
   },
+
+  async getOrganization(id) {
+    return OrganizationRestController.get(id);
+  },
+
+  async updateBudget(id, delta) {
+    return OrganizationRestController.updateBudget(id, delta);
+  }
 };

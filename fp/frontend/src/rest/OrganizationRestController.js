@@ -27,4 +27,16 @@ export const OrganizationRestController = {
       body: JSON.stringify({ name, contact }),
     }).then(handleResponse);
   },
+  
+  get(id) {
+    return fetch(`${API_URL}/${id}`).then(handleResponse);
+  },
+
+  updateBudget(id, delta) {
+    return fetch(`${API_URL}/${id}/budget`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ delta })
+    }).then(handleResponse);
+  }
 };

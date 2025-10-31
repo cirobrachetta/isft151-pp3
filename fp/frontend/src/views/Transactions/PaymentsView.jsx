@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { TransactionController } from "../../controllers/TransactionController";
 import '../../components/AddPaymentModal'; // register web component
 import BudgetWidget from '../../components/BudgetWidget';
+import { OrganizationController } from '../../controllers/OrganizationController';
 
 export default function PaymentsView() {
   const [debtId, setDebtId] = useState("");
@@ -42,6 +43,13 @@ export default function PaymentsView() {
     // if backend returned organization, emit budget-updated for real-time UI (mirror CashMovementsView behavior)
     if (res && res.organization) {
       document.dispatchEvent(new CustomEvent('budget-updated', { detail: res.organization, bubbles: true }));
+    } else {
+      // Fallback: if API didn't return org, fetch first org (PaymentDAO uses first org when none provided) and emit
+      try {
+        const list = await OrganizationController.listOrganizations();
+        const first = Array.isArray(list) && list.length ? list[0] : null;
+        if (first) document.dispatchEvent(new CustomEvent('budget-updated', { detail: first, bubbles: true }));
+      } catch (e) { /* ignore */ }
     }
     setForm({ debt_id: "", amount: "" });
     // Recargar lista completa

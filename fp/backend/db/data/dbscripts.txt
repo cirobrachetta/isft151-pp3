@@ -2,5 +2,5 @@ inicializar:-> desde DB
 node init.js
 
 para updates:->
-node fp/backend/db/run-sql.js exec fp/backend/db/updates pending_updates_0001.sql
+node run-sql.js exec updates pending_updates_0001.sql
 

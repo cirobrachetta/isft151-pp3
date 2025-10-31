@@ -4,7 +4,7 @@ import RegisterView from "../views/RegisterView";
 import UserListView from "../views/UserListView";
 import DashboardView from "../views/DashboardView";
 
-import CashMovementsView from "../views/Transactions/CashMovementsView";
+import IncomesView from "../views/Transactions/IncomesView";
 import DebtsView from "../views/Transactions/DebtsView";
 import PaymentsView from "../views/Transactions/PaymentsView";
 import FinanceView from "../views/Transactions/FinanceView";
@@ -26,7 +26,7 @@ export const routesConfig = (isAuth, handleLogin) => [
   { path: "/users", element: <PrivateRoute isAuth={isAuth} element={<UserListView />} /> },
   { path: "/organizations", element: <PrivateRoute isAuth={isAuth} element={<OrganizationsView />} /> },
   { path: "/inventory", element: <PrivateRoute isAuth={isAuth} element={<InventoryView />} /> },
-  { path: "/cash", element: <PrivateRoute isAuth={isAuth} element={<CashMovementsView />} />,},
+  { path: "/incomes", element: <PrivateRoute isAuth={isAuth} element={<IncomesView />} />,},
   { path: "/debts", element: <PrivateRoute isAuth={isAuth} element={<DebtsView />} />,},
   { path: "/payments", element: <PrivateRoute isAuth={isAuth} element={<PaymentsView />} />,},
   { path: "/events", element: <PrivateRoute isAuth={isAuth} element={<EventsView />} /> },

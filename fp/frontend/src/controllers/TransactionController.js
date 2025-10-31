@@ -2,15 +2,18 @@ import { TransactionRestController } from "../rest/TransactionRestController.js"
 
 export const TransactionController = {
   // 💵 Cash Movements
-  async listCashMovements() {
-    return TransactionRestController.listCashMovements();
+  // 💵 Incomes (formerly cash movements)
+  async listIncomes() {
+    return TransactionRestController.listIncomes();
   },
-  async createCashMovement(data) {
-    return TransactionRestController.createCashMovement(data);
+  async createIncome(data) {
+    return TransactionRestController.createIncome(data);
   },
-  async deleteCashMovement(id) {
-    return TransactionRestController.deleteCashMovement(id);
+  async deleteIncome(id) {
+    return TransactionRestController.deleteIncome(id);
   },
+
+  // NOTE: legacy alias methods removed — use listIncomes/createIncome/deleteIncome
 
   // 💳 Payments
   async listPaymentsByDebt(debtId) {

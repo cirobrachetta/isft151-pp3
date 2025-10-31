@@ -6,7 +6,7 @@ require('../db/connection').getDB();
 require('./utils/initSuperAdmin').initSuperadmin();
 
 const userRoutes = require('./rest/UserRestController');
-const cashMovementRoutes = require("./rest/CashMovementRestController");
+const incomesRoutes = require("./rest/IncomesRestController");
 const DebtRestController = require("./rest/DebtRestController");
 const PaymentRestController = require("./rest/PaymentRestController");
 const orgRoutes = require('./rest/OrganizationRestController');
@@ -32,7 +32,7 @@ app.use('/roles', roleRoutes);
 app.use('/products', productRoutes);
 app.use('/events', eventRoutes);
 
-app.use("/api/tesoreria/movimientos", cashMovementRoutes);
+app.use("/api/tesoreria/incomes", incomesRoutes);
 app.use("/api/tesoreria/debts", DebtRestController);
 app.use("/api/tesoreria/payments", PaymentRestController);
 

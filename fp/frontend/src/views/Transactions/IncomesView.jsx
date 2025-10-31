@@ -3,11 +3,11 @@ import { TransactionController } from "../../controllers/TransactionController";
 import { OrganizationController } from '../../controllers/OrganizationController';
 import BudgetWidget from '../../components/BudgetWidget';
 
-export default function CashMovementsView() {
+export default function IncomesView() {
   const [movements, setMovements] = useState([]);
   const [organizations, setOrganizations] = useState([]);
   const [selectedOrg, setSelectedOrg] = useState(null);
-  // El backend espera 'ingreso' o 'egreso' en la columna "type"
+  // only ingresos allowed here
   const [form, setForm] = useState({ type: "ingreso", amount: "", description: "" });
 
   useEffect(() => {
@@ -27,36 +27,34 @@ export default function CashMovementsView() {
   }
 
   async function loadData() {
-    const data = await TransactionController.listCashMovements();
-    setMovements(data);
+    const data = await TransactionController.listIncomes();
+    setMovements(data || []);
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
-    // Asegurarse de enviar el tipo esperado por la DB y que el amount sea numérico
     const payload = { ...form, amount: Number(form.amount), organization_id: selectedOrg };
     try {
-      const res = await TransactionController.createCashMovement(payload);
+      const res = await TransactionController.createIncome(payload);
       setForm({ type: "ingreso", amount: "", description: "" });
       await loadData();
-      // if backend returned organization, emit budget-updated for real-time UI
       if (res && res.organization) {
         document.dispatchEvent(new CustomEvent('budget-updated', { detail: res.organization, bubbles: true }));
       }
     } catch (err) {
-      console.error('Error creando movimiento:', err);
+      console.error('Error creando income:', err);
     }
   }
 
   async function handleDelete(id) {
-    await TransactionController.deleteCashMovement(id);
+    await TransactionController.deleteIncome(id);
     loadData();
   }
 
   return (
     <div style={styles.container}>
       <BudgetWidget orgId={selectedOrg} />
-      <h2>Cash Movements</h2>
+      <h2>Incomes</h2>
       <form onSubmit={handleSubmit} style={styles.form}>
         {organizations && organizations.length > 0 ? (
           <select value={selectedOrg || ''} onChange={e => setSelectedOrg(Number(e.target.value))}>
@@ -65,14 +63,13 @@ export default function CashMovementsView() {
             ))}
           </select>
         ) : (
-          <div style={{color:'#a00'}}>No hay organizaciones. Cree una organización primero.</div>
+          <div style={{color:'#a00'}}>No organizations. Create one first.</div>
         )}
         <select
           value={form.type}
           onChange={(e) => setForm({ ...form, type: e.target.value })}
         >
           <option value="ingreso">Income</option>
-          <option value="egreso">Expense</option>
         </select>
         <input
           type="number"
@@ -102,18 +99,16 @@ export default function CashMovementsView() {
           </tr>
         </thead>
         <tbody>
-          {movements.map((m) => (
+          { (movements || []).map((m) => (
             <tr key={m.id}>
               <td>{m.id}</td>
               <td>{m.type}</td>
               <td>{m.amount}</td>
               <td>{m.description}</td>
               <td>{new Date(m.created_at).toLocaleString()}</td>
-              <td>
-                <button onClick={() => handleDelete(m.id)}>❌</button>
-              </td>
+              <td><button onClick={() => handleDelete(m.id)}>❌</button></td>
             </tr>
-          ))}
+          )) }
         </tbody>
       </table>
     </div>

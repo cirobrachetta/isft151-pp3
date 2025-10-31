@@ -4,7 +4,7 @@ const data = JSON.stringify({ type: 'ingreso', amount: 123.45, description: 'tes
 const options = {
   hostname: 'localhost',
   port: 4000,
-  path: '/api/tesoreria/movimientos',
+  path: '/api/tesoreria/incomes',
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',

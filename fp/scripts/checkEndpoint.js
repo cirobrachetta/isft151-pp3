@@ -1,5 +1,5 @@
 const http = require('http');
-const url = 'http://localhost:4000/api/tesoreria/movimientos';
+const url = 'http://localhost:4000/api/tesoreria/incomes';
 
 http.get(url, (res) => {
   console.log('status', res.statusCode);

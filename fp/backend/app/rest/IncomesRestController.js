@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const controller = require('../controllers/CashMovementController');
+// Reuse existing cash movement DAO logic for incomes
+const controller = require('../controllers/IncomesController');
 
 router.post('/', controller.create);
 router.get('/', controller.list);

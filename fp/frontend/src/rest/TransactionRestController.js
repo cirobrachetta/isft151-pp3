@@ -1,6 +1,6 @@
 const BASE_URL = "http://localhost:4000"; // Puerto del backend
 
-const API_CASH = `${BASE_URL}/api/tesoreria/movimientos`;
+const API_INCOMES = `${BASE_URL}/api/tesoreria/incomes`;
 const API_PAYMENTS = `${BASE_URL}/api/tesoreria/payments`;
 const API_DEBTS = `${BASE_URL}/api/tesoreria/debts`;
 
@@ -24,20 +24,22 @@ async function handleResponse(res) {
 }
 
 export const TransactionRestController = {
-  // 💵 CASH MOVEMENTS
-  listCashMovements() {
-    return fetch(API_CASH).then(handleResponse);
+  // 💵 INCOMES (formerly cash movements)
+  listIncomes() {
+    return fetch(API_INCOMES).then(handleResponse);
   },
-  createCashMovement(data) {
-    return fetch(API_CASH, {
+  createIncome(data) {
+    return fetch(API_INCOMES, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     }).then(handleResponse);
   },
-  deleteCashMovement(id) {
-    return fetch(`${API_CASH}/${id}`, { method: "DELETE" }).then(handleResponse);
+  deleteIncome(id) {
+    return fetch(`${API_INCOMES}/${id}`, { method: "DELETE" }).then(handleResponse);
   },
+
+  // (aliases removed) Use listIncomes/createIncome/deleteIncome instead of cash-movements APIs
 
   // 💳 PAYMENTS
   listPaymentsByDebt(debtId) {

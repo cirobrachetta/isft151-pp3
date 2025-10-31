@@ -7,7 +7,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/users": "http://localhost:4000",
-      '/cash': 'http://localhost:4000',
+      '/incomes': 'http://localhost:4000',
       '/payments': 'http://localhost:4000',
       '/debts': 'http://localhost:4000'
     },

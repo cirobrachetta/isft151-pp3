@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { EventController } from "../controllers/EventController.js";
+import BackButton from "../components/BackButton";
 
 export default function EventDetailView() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [event, setEvent] = useState(null);
   const [products, setProducts] = useState([]);
   const [reservations, setReservations] = useState([]);
@@ -53,7 +53,7 @@ export default function EventDetailView() {
         </div>
       )}
 
-      {/* ======================== BUSCADOR Y TABLA DE PRODUCTOS ======================== */}
+      {/* Productos */}
       <h2>Asignar productos</h2>
       <input
         type="text"
@@ -96,7 +96,14 @@ export default function EventDetailView() {
                 </td>
                 <td>
                   <button
-                    style={{ backgroundColor: "#2563eb", color: "#fff", border: "none", padding: "4px 10px", borderRadius: "4px", cursor: "pointer" }}
+                    style={{
+                      backgroundColor: "#2563eb",
+                      color: "#fff",
+                      border: "none",
+                      padding: "4px 10px",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                    }}
                     onClick={() => {
                       const qty = parseInt(document.getElementById(`qty-${p.id}`).value);
                       assign(p.id, qty);
@@ -111,7 +118,7 @@ export default function EventDetailView() {
         </table>
       </div>
 
-      {/* ======================== TABLA DE PRODUCTOS ASIGNADOS ======================== */}
+      {/* Asignados */}
       <h2 style={{ marginTop: "2rem" }}>Productos asignados</h2>
       <div style={{ maxHeight: "250px", overflowY: "auto", border: "1px solid #ddd" }}>
         <table className="inventoryTable" style={{ width: "100%" }}>
@@ -179,21 +186,8 @@ export default function EventDetailView() {
         </table>
       </div>
 
-      <div style={{ textAlign: "center", marginTop: "2rem" }}>
-        <button
-          onClick={() => navigate("/events")}
-          style={{
-            backgroundColor: "#4b5563",
-            color: "white",
-            padding: "8px 16px",
-            borderRadius: "6px",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          ← Volver a eventos
-        </button>
-      </div>
+      {/* Botón reutilizable */}
+      <BackButton label="← Volver a eventos" to="/events" />
     </div>
   );
 }

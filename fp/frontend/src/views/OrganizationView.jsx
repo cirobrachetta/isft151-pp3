@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { OrganizationController } from "../controllers/OrganizationController";
+import BackButton from "../components/BackButton";
 import "../../styles/OrganizationView.scss";
 
 export default function OrganizationsView() {
@@ -69,6 +70,8 @@ export default function OrganizationsView() {
           </li>
         ))}
       </ul>
+
+      <BackButton />
     </div>
   );
 }

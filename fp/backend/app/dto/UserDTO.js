@@ -5,6 +5,9 @@ function toUserDTO(user) {
     username: user.username,
     active: !!user.active,
     createdAt: user.createdAt,
+    organizationId: user.organizationId,
+    role_id: user.roleId,
+    role_name: user.roleName
   };
 }
 

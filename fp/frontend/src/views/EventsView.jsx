@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { EventController } from "../controllers/EventController.js";
-import "../../styles/InventoryView.scss"; // Reutiliza mismo estilo
+import "../../styles/InventoryView.scss"; 
+import BackButton from "../components/BackButton";
 
 export default function EventsView() {
   const [events, setEvents] = useState([]);
@@ -173,6 +174,7 @@ export default function EventsView() {
           )}
         </tbody>
       </table>
+      <BackButton label="← Volver al dashboard" to="/dashboard" />
     </div>
   );
 }

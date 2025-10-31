@@ -22,9 +22,18 @@ const UserDAO = {
 
   selectUsers() {
     const rows = allQuery(`
-      SELECT id, username, active, created_at
-      FROM users
-      ORDER BY id;
+      SELECT 
+        u.id,
+        u.username,
+        u.active,
+        u.created_at,
+        u.organization_id,
+        ur.role_id,
+        r.name AS role_name
+      FROM users u
+      LEFT JOIN user_roles ur ON ur.user_id = u.id
+      LEFT JOIN roles r ON r.id = ur.role_id
+      ORDER BY u.id;
     `);
     if (!rows || !Array.isArray(rows)) return [];
     return rows.map(User.fromRow);
@@ -89,7 +98,6 @@ const UserDAO = {
       WHERE user_id = :userId;
     `, { userId, roleId });
 
-    // si no tenía registro, lo insertamos
     if (info.changes === 0) {
       runQuery(`
         INSERT INTO user_roles (user_id, role_id)
@@ -109,6 +117,8 @@ const UserDAO = {
       ORDER BY o.name;
     `, { userId });
   },
+
+
 
 
 };

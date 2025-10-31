@@ -1,31 +1,88 @@
 .usersContainer {
-  text-align: center;
-  margin-top: 5rem;
-  font-family: Arial, sans-serif;
+  padding: 2rem;
+  max-width: 900px;
+  margin: auto;
 }
 
-.usersContainer h2 {
-  color: #2c3e50;
+.subtitle {
+  color: #4b5563;
   margin-bottom: 1rem;
 }
 
-.usersContainer ul {
-  list-style: none;
-  padding: 0;
-  max-width: 400px;
-  margin: 0 auto;
+/* ==== CREAR USUARIO ==== */
+.userFormCard {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 8px;
+
+  h2 {
+    margin-top: 0;
+    color: #1f2937;
+    font-size: 1.1rem;
+  }
+
+  form {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+
+    input {
+      padding: 6px 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+
+      &:hover {
+        background-color: #1d4ed8;
+      }
+    }
+  }
 }
 
-.usersContainer li {
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  margin: 0.5rem 0;
-  padding: 0.75rem;
-  font-size: 1rem;
-  transition: background-color 0.2s ease;
-}
+/* ==== TABLA ==== */
+.usersTable {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #e5e7eb;
+  font-size: 0.95rem;
 
-.usersContainer li:hover {
-  background-color: #eef5ff;
+  th {
+    background: #f3f4f6;
+    text-align: left;
+    padding: 10px;
+  }
+
+  td {
+    padding: 8px;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  tr:hover {
+    background: #f9fafb;
+  }
+
+  .locked {
+    color: #9ca3af;
+  }
+
+  .superadminRow {
+    background-color: #fef3c7;
+  }
+
+  .noData {
+    text-align: center;
+    padding: 1rem;
+    color: #6b7280;
+  }
 }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ProductController } from "../controllers/ProductController.js";
 import "../../styles/InventoryView.scss";
+import BackButton from "../components/BackButton";
 
 export default function InventoryView() {
   const [products, setProducts] = useState([]);
@@ -191,6 +192,7 @@ export default function InventoryView() {
           )}
         </tbody>
       </table>
+      <BackButton label="← Volver al dashboard" to="/dashboard" />
     </div>
   );
 }

@@ -1,77 +1,47 @@
-const BASE_URL = "http://localhost:4000"; // Puerto del backend
-
-const API_INCOMES = `${BASE_URL}/api/tesoreria/incomes`;
-const API_PAYMENTS = `${BASE_URL}/api/tesoreria/payments`;
-const API_DEBTS = `${BASE_URL}/api/tesoreria/debts`;
-
-async function handleResponse(res) {
-  if (!res || typeof res.json !== "function") {
-    throw new Error("Respuesta inválida del servidor");
-  }
-
-  let data = null;
-  try {
-    data = await res.json();
-  } catch (err) {
-    console.warn("No se pudo parsear JSON:", err);
-  }
-
-  if (!res.ok) {
-    throw new Error((data && data.error) || res.statusText || "Error desconocido");
-  }
-
-  return data;
-}
+import { fetchWithAuth } from "../utils/httpClient.js";
 
 export const TransactionRestController = {
-  // 💵 INCOMES (formerly cash movements)
   listIncomes() {
-    return fetch(API_INCOMES).then(handleResponse);
+    return fetchWithAuth("/api/tesoreria/incomes");
   },
   createIncome(data) {
-    return fetch(API_INCOMES, {
+    return fetchWithAuth("/api/tesoreria/incomes", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
-    }).then(handleResponse);
+    });
   },
   deleteIncome(id) {
-    return fetch(`${API_INCOMES}/${id}`, { method: "DELETE" }).then(handleResponse);
+    return fetchWithAuth(`/api/tesoreria/incomes/${id}`, { method: "DELETE" });
   },
 
-  // (aliases removed) Use listIncomes/createIncome/deleteIncome instead of cash-movements APIs
-
-  // 💳 PAYMENTS
+  // PAYMENTS
+  listPayments() {
+    return fetchWithAuth("/api/tesoreria/payments");
+  },
   listPaymentsByDebt(debtId) {
-    return fetch(`${API_PAYMENTS}/debt/${debtId}`).then(handleResponse);
+    return fetchWithAuth(`/api/tesoreria/payments/debt/${debtId}`);
   },
   createPayment(data) {
-    return fetch(API_PAYMENTS, {
+    return fetchWithAuth("/api/tesoreria/payments", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
-    }).then(handleResponse);
+    });
   },
   deletePayment(id) {
-    return fetch(`${API_PAYMENTS}/${id}`, { method: "DELETE" }).then(handleResponse);
+    return fetchWithAuth(`/api/tesoreria/payments/${id}`, { method: "DELETE" });
   },
 
-  listPayments() {
-    return fetch(API_PAYMENTS).then(handleResponse);
-  },
-
-  // 📜 DEBTS
+  // DEBTS
   listDebts() {
-    return fetch(API_DEBTS).then(handleResponse);
+    return fetchWithAuth("/api/tesoreria/debts");
   },
   createDebt(data) {
-    return fetch(API_DEBTS, {
+    return fetchWithAuth("/api/tesoreria/debts", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
-    }).then(handleResponse);
+    });
   },
   deleteDebt(id) {
-    return fetch(`${API_DEBTS}/${id}`, { method: "DELETE" }).then(handleResponse);
+    return fetchWithAuth(`/api/tesoreria/debts/${id}`, { method: "DELETE" });
   },
 };

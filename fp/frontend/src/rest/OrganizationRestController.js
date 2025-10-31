@@ -1,42 +1,27 @@
-const API_BASE = "http://localhost:4000";
-const API_URL = `${API_BASE}/organizations`;
+import { fetchWithAuth } from "../utils/httpClient.js";
 
-async function handleResponse(res) {
-  if (!res.ok) {
-    let msg = "Unknown error";
-    try {
-      const err = await res.json();
-      msg = err.error || msg;
-    } catch {
-      msg = res.statusText || msg;
-    }
-    throw new Error(msg);
-  }
-  return res.json();
-}
+const BASE = "/organizations";
 
 export const OrganizationRestController = {
   list() {
-    return fetch(API_URL).then(handleResponse);
+    return fetchWithAuth(BASE);
   },
 
   create(name, contact) {
-    return fetch(API_URL, {
+    return fetchWithAuth(BASE, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, contact }),
-    }).then(handleResponse);
+    });
   },
-  
+
   get(id) {
-    return fetch(`${API_URL}/${id}`).then(handleResponse);
+    return fetchWithAuth(`${BASE}/${id}`);
   },
 
   updateBudget(id, delta) {
-    return fetch(`${API_URL}/${id}/budget`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ delta })
-    }).then(handleResponse);
-  }
+    return fetchWithAuth(`${BASE}/${id}/budget`, {
+      method: "PUT",
+      body: JSON.stringify({ delta }),
+    });
+  },
 };

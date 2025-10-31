@@ -33,7 +33,7 @@ const UserController = {
     }
   },
 
-  login: async (req, res) => {
+  login(req, res) {
     try {
       const { username, password } = req.body;
       const user = UserDAO.selectUserByUsername(username);
@@ -43,11 +43,17 @@ const UserController = {
       const token = `session-${Date.now()}-${user.id}`;
       sessions.set(token, user.id);
 
-      const roleInfo = UserDAO.selectRoleAndOrgByUserId(user.id);
+      const roleInfo = UserDAO.selectRoleAndOrgByUserId(user.id) || {};
       let orgs = [];
 
-      if (roleInfo.role === 'administrador_general') {
-        orgs = await allQuery(`SELECT id, name FROM organizations ORDER BY name;`);
+      const roleName = (roleInfo.role || "").toLowerCase().trim();
+      const isSuperAdmin = ["admin", "administrador_general", "superadmin"].some(keyword =>
+        roleName.includes(keyword)
+      );
+
+      if (isSuperAdmin) {
+        console.log("🧩 Superadmin detectado, cargando TODAS las organizaciones");
+        orgs = allQuery(`SELECT id, name FROM organizations ORDER BY name;`);
       } else {
         orgs = UserDAO.selectOrganizationsByUserId(user.id);
       }
@@ -63,7 +69,6 @@ const UserController = {
       res.status(400).json({ error: e.message });
     }
   },
-
 
   logout(req, res) {
     const token = req.body.token;
@@ -120,7 +125,6 @@ const UserController = {
       res.status(400).json({ error: e.message });
     }
   },
-
 };
 
 module.exports = { UserController, sessions };

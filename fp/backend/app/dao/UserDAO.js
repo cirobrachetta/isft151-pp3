@@ -64,11 +64,12 @@ const UserDAO = {
 
   selectRoleAndOrgByUserId(userId) {
     return getQuery(`
-      SELECT r.name AS role, o.id AS organization_id
+      SELECT r.name AS role,
+            ur.organization_id
       FROM user_roles ur
       JOIN roles r ON r.id = ur.role_id
-      LEFT JOIN organizations o ON o.id = ur.organization_id
       WHERE ur.user_id = :userId
+      ORDER BY ur.organization_id IS NULL DESC
       LIMIT 1;
     `, { userId }) || {};
   },

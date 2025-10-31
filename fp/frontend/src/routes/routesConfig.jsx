@@ -12,6 +12,7 @@ import FinanceView from "../views/Transactions/FinanceView";
 import PrivateRoute from "../components/PrivateRoute";
 import InventoryView from "../views/InventoryView";
 import EventsView from "../views/EventsView";
+import EventDetailView from "../views/EventDetailsView";
 import OrganizationsView from "../views/OrganizationView";
 import OrganizationSelectView from "../views/OrganizationSelectView";
 
@@ -29,6 +30,7 @@ export const routesConfig = (isAuth, handleLogin) => [
   { path: "/debts", element: <PrivateRoute isAuth={isAuth} element={<DebtsView />} />,},
   { path: "/payments", element: <PrivateRoute isAuth={isAuth} element={<PaymentsView />} />,},
   { path: "/events", element: <PrivateRoute isAuth={isAuth} element={<EventsView />} /> },
+  { path: "/events/:id/detail", element: <PrivateRoute isAuth={isAuth} element={<EventDetailView />} /> },
   { path: "/select-org", element: <PrivateRoute isAuth={isAuth} element={<OrganizationSelectView />} /> },
   { path: "/finance", element: <PrivateRoute isAuth={isAuth} element={<FinanceView />} /> },
 

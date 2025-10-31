@@ -13,7 +13,6 @@ export const UserController = {
         localStorage.setItem("role", result.role);
       }
 
-      // ✅ guardar organización si viene en la respuesta
       if (result.organizationId !== undefined && result.organizationId !== null) {
         localStorage.setItem("organization", String(result.organizationId));
         console.log("✅ Organization guardado en localStorage:", result.organizationId);

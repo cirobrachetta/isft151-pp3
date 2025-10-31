@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { UserController } from "../controllers/UserController.js";
 import "../../styles/LoginView.scss";
 
 export default function LoginView({ onLogin }) {
@@ -18,40 +19,42 @@ export default function LoginView({ onLogin }) {
     }
 
     try {
-      const res = await fetch("http://localhost:4000/users/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
+      const data = await UserController.login(username, password);
 
-      const data = await res.json();
       if (data.error) {
         setError(data.error);
         return;
       }
 
-      // Guardar info base en localStorage
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("username", username);
-      localStorage.setItem("role", data.role || "");
+      if (data.token) {
+        const orgs = data.organizations || [];
+        const role = (data.role || "").toLowerCase();
 
-      // Si hay organizaciones (superadmin o usuario con varias)
-      if (data.organizations?.length > 0) {
-        localStorage.setItem("organizations", JSON.stringify(data.organizations));
+        localStorage.setItem("organizations", JSON.stringify(orgs));
 
-        // Si solo tiene una, entra directo
-        if (data.organizations.length === 1 && data.role !== "administrador_general") {
-          const org = data.organizations[0];
+        if (role === "administrador_general") {
+          localStorage.setItem("role", data.role);
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("username", username);
+          onLogin(data.token);
+          navigate("/select-org");
+          return;
+        }
+
+        if (orgs.length === 0) {
+          setError("No hay organizaciones disponibles para este usuario.");
+          return;
+        }
+
+        if (orgs.length === 1) {
+          const org = orgs[0];
           localStorage.setItem("organization", org.name);
           localStorage.setItem("organizationId", org.id);
           onLogin(data.token);
           navigate("/dashboard");
         } else {
-          // Si es superadmin o tiene varias, mostrar selector
           navigate("/select-org");
         }
-      } else {
-        setError("No hay organizaciones disponibles para este usuario.");
       }
     } catch (err) {
       setError("Error al iniciar sesión: " + err.message);

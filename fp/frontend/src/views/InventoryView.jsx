@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { ProductController } from "../controllers/ProductController.js";
 import "../../styles/InventoryView.scss";
 
 export default function InventoryView() {
@@ -12,63 +13,32 @@ export default function InventoryView() {
   });
   const [editing, setEditing] = useState(null);
   const [showInactive, setShowInactive] = useState(true);
-  const token = localStorage.getItem("token");
-  const organizationId = localStorage.getItem("organizationId");
 
-  const fetchProducts = async () => {
-    const res = await fetch("http://localhost:4000/products", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
+  const load = async () => {
+    const data = await ProductController.list();
     setProducts(data);
   };
 
   useEffect(() => {
-    fetchProducts();
+    load();
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const method = editing ? "PUT" : "POST";
-    const url = editing
-      ? `http://localhost:4000/products/${editing}`
-      : "http://localhost:4000/products";
-
-    await fetch(url, {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        ...form,
-        organizationId: organizationId ? Number(organizationId) : null,
-      }),
-    });
-
+    if (editing) {
+      await ProductController.update(editing, form);
+      setEditing(null);
+    } else {
+      await ProductController.create(form);
+    }
     setForm({ name: "", cost: 0, price: 0, stock: 0, minStock: 0 });
-    setEditing(null);
-    fetchProducts();
+    load();
   };
 
   const handleDeactivate = async (id, active) => {
-    const confirmText = active
-      ? "¿Desactivar este producto?"
-      : "¿Reactivar este producto?";
-    if (!window.confirm(confirmText)) return;
-
-    const method = "PUT";
-    const url = `http://localhost:4000/products/${id}`;
-    await fetch(url, {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ active: active ? 0 : 1 }),
-    });
-
-    fetchProducts();
+    if (!window.confirm(active ? "¿Desactivar este producto?" : "¿Reactivar este producto?")) return;
+    await ProductController.deactivate(id, active);
+    load();
   };
 
   const visibleProducts = showInactive
@@ -101,9 +71,7 @@ export default function InventoryView() {
               type="number"
               min="0"
               value={form.cost}
-              onChange={(e) =>
-                setForm({ ...form, cost: parseFloat(e.target.value) })
-              }
+              onChange={(e) => setForm({ ...form, cost: parseFloat(e.target.value) })}
             />
           </div>
 
@@ -113,9 +81,7 @@ export default function InventoryView() {
               type="number"
               min="0"
               value={form.price}
-              onChange={(e) =>
-                setForm({ ...form, price: parseFloat(e.target.value) })
-              }
+              onChange={(e) => setForm({ ...form, price: parseFloat(e.target.value) })}
             />
           </div>
 
@@ -125,9 +91,7 @@ export default function InventoryView() {
               type="number"
               min="0"
               value={form.stock}
-              onChange={(e) =>
-                setForm({ ...form, stock: parseInt(e.target.value) })
-              }
+              onChange={(e) => setForm({ ...form, stock: parseInt(e.target.value) })}
             />
           </div>
 
@@ -137,15 +101,11 @@ export default function InventoryView() {
               type="number"
               min="0"
               value={form.minStock}
-              onChange={(e) =>
-                setForm({ ...form, minStock: parseInt(e.target.value) })
-              }
+              onChange={(e) => setForm({ ...form, minStock: parseInt(e.target.value) })}
             />
           </div>
 
-          <button type="submit">
-            {editing ? "Guardar cambios" : "Agregar producto"}
-          </button>
+          <button type="submit">{editing ? "Guardar cambios" : "Agregar producto"}</button>
 
           {editing && (
             <button
@@ -195,9 +155,7 @@ export default function InventoryView() {
             visibleProducts.map((p) => (
               <tr
                 key={p.id}
-                className={`${p.stock <= p.min_stock ? "lowStock" : ""} ${
-                  !p.active ? "inactive" : ""
-                }`}
+                className={`${p.stock <= p.min_stock ? "lowStock" : ""} ${!p.active ? "inactive" : ""}`}
               >
                 <td>{p.id}</td>
                 <td>{p.name}</td>
@@ -222,14 +180,10 @@ export default function InventoryView() {
                       >
                         Editar
                       </button>
-                      <button onClick={() => handleDeactivate(p.id, true)}>
-                        Desactivar
-                      </button>
+                      <button onClick={() => handleDeactivate(p.id, true)}>Desactivar</button>
                     </>
                   ) : (
-                    <button onClick={() => handleDeactivate(p.id, false)}>
-                      Reactivar
-                    </button>
+                    <button onClick={() => handleDeactivate(p.id, false)}>Reactivar</button>
                   )}
                 </td>
               </tr>

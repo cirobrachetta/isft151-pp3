@@ -1,7 +1,0 @@
-CREATE TABLE if not exists event_products (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
-  product_id INTEGER NOT NULL REFERENCES products(id),
-  qty INTEGER NOT NULL CHECK (qty > 0),
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);

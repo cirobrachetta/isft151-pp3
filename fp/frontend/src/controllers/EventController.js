@@ -46,5 +46,8 @@ export const EventController = {
     const reservations = await EventRestController.listProducts(eventId);
     return { event, products, reservations };
   },
-  
+
+  async printPDF(eventId) {
+    return EventRestController.printPDF(eventId);
+  },
 };

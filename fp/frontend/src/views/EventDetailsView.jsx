@@ -177,10 +177,39 @@ export default function EventDetailView() {
           <h2>{event.name}</h2>
           <p><b>Fecha:</b> {event.date}</p>
           <p><b>Precio ticket:</b> ${event.ticket_price}</p>
+          <button
+            onClick={async () => {
+              const token = localStorage.getItem("token");
+              const res = await fetch(`http://localhost:4000/events/${event.id}/pdf`, {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+
+              if (!res.ok) {
+                alert("Error generando el PDF");
+                return;
+              }
+
+              const blob = await res.blob();
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `evento_${event.id}.pdf`;
+              a.click();
+              a.remove();
+            }}
+            style={{
+              backgroundColor: "#2563eb",
+              color: "#fff",
+              border: "none",
+              padding: "6px 12px",
+              borderRadius: "4px",
+              cursor: "pointer"
+            }}
+          >
+            📄 Imprimir PDF
+          </button>
         </div>
       )}
-
-      {/* Asignar productos */}
       <h2>Asignar productos</h2>
       <input
         type="text"

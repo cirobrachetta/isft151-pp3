@@ -55,4 +55,7 @@ export const EventRestController = {
       method: "DELETE",
     });
   },
+  printPDF(eventId) {
+    return fetchWithAuth(`${BASE}/${eventId}/pdf`);
+  },
 };

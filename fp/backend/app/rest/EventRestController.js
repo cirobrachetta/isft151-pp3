@@ -14,4 +14,7 @@ router.post('/:id/products', requireAuth, EventController.assignProduct);
 router.put('/:eventId/products/:productId', requireAuth, EventController.updateAssignedProduct);
 router.delete('/:eventId/products/:productId', requireAuth, EventController.removeAssignedProduct);
 
+//PDF
+router.get('/:id/pdf', requireAuth, EventController.printPDF);
+
 module.exports = router;

@@ -18,7 +18,8 @@ CREATE TABLE users (
 CREATE TABLE organizations (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT UNIQUE NOT NULL,
-  contact TEXT
+  contact TEXT,
+  budget FLOAT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE roles (
@@ -120,7 +121,8 @@ CREATE TABLE payments (
   amount NUMERIC NOT NULL CHECK (amount > 0),
   payment_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   method TEXT,
-  notes TEXT
+  notes TEXT,
+  applied_to_budget FLOAT
 );
 
 ------------------------------------------------------------

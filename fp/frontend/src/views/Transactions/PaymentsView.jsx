@@ -85,24 +85,6 @@ export default function PaymentsView() {
       <BudgetWidget />
       <h2>Payments</h2>
 
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <input
-          type="text"
-          placeholder="Debt ID"
-          value={form.debt_id}
-          onChange={(e) => setForm({ ...form, debt_id: e.target.value })}
-          required
-        />
-        <input
-          type="number"
-          placeholder="Amount"
-          value={form.amount}
-          onChange={(e) => setForm({ ...form, amount: e.target.value })}
-          required
-        />
-        <button type="submit">Add</button>
-      </form>
-
       <div style={{ marginTop: "1rem" }}>
           <button onClick={() => {
             const modal = document.getElementById('addPaymentModal');
